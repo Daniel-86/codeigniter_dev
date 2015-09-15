@@ -41,6 +41,8 @@
 $route['default_controller'] = "welcome";
 $route['404_override'] = '';
 
+$route['satisfaction-poll'] = "satisfaction_poll/loadForm";
+
 
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */
