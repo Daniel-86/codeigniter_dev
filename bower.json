@@ -1,0 +1,24 @@
+{
+  "name": "codeigniter_excel",
+  "version": "0.0.0",
+  "homepage": "https://github.com/Daniel-86/codeigniter_dev",
+  "authors": [
+    "Daniel Jiménez <daniel.jimenez@scitum.com.mx>"
+  ],
+  "description": "Para pruebas",
+  "moduleType": [
+    "globals"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-charts": "~0.2.7",
+    "angular-chart.js": "~0.8.4"
+  }
+}

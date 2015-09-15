@@ -60,9 +60,17 @@
             </button>
         </form>
     </div>
+    <div class="col-md-12" ng-controller="D3ChartsCtrl">
+        <div ac-chart="bar"
+             data-ac-config="d3Config"
+             data-ac-data="d3Data"></div>
+    </div>
 </div>
 
 <script src="<?php echo base_url('assets/js/angular.js')?>"></script>
+<script src="<?php echo base_url('bower_components/d3/d3.min.js')?>"></script>
+<script src="<?php echo base_url('bower_components/angular-charts/dist/angular-charts.js')?>"></script>
 <script src="<?php echo base_url('assets/js/app/app.js')?>"></script>
+<script src="<?php echo base_url('assets/js/app/d3Charts.js')?>"></script>
 <script src="<?php echo base_url('assets/js/directives/inputFile.js')?>"></script>
 </body>
