@@ -16,7 +16,8 @@
 | environments.
 |
 */
-$config['base_url'] = 'http://192.168.1.102/codeigniter_dev';
+//$config['base_url'] = 'http://192.168.1.102/codeigniter_dev';
+$config['base_url'] = 'http://172.22.24.32/codeigniter_dev';
 
 /*
 |--------------------------------------------------------------------------
@@ -28,7 +29,7 @@ $config['base_url'] = 'http://192.168.1.102/codeigniter_dev';
 | variable so that it is blank.
 |
 */
-$config['index_page'] = 'index.php';
+$config['index_page'] = '';
 
 /*
 |--------------------------------------------------------------------------
