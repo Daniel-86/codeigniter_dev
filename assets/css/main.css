@@ -36,3 +36,15 @@ scatter-chart {
 .bordered {
     border: solid 1px #f00;
 }
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}

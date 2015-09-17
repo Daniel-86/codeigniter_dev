@@ -61,6 +61,14 @@ barChartModule.directive('barChart', function() {
         //    11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
         //var data = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13 ];
 
+        var padding = 20;
+        var xScale = d3.scale.linear()
+            .domain([0, d3.max(data, function(d) { return d[0];})])
+            .range([padding, w - padding*2]);
+        var yScale = d3.scale.linear()
+            .domain([0, d3.max(data, function(d) { return d[1];})])
+            .range([h - padding, padding]);
+
         var svg = d3.select(el)
             .append('svg')
             .attr('width', w)

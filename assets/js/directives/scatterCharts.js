@@ -13,7 +13,8 @@ scatterChartsModule.directive('scatterChart', function() {
         var w = el.clientWidth,
             h = el.clientHeight;
         var data = scope.chartData;
-        var padding = 20;
+        var padding = 30;
+
         var xScale = d3.scale.linear()
             .domain([0, d3.max(data, function(d) { return d[0];})])
             .range([padding, w - padding*2]);
@@ -23,6 +24,15 @@ scatterChartsModule.directive('scatterChart', function() {
         var rScale = d3.scale.linear()
             .domain([0, d3.max(data, function (d) { return d[1]; })])
             .range([2, 5]);
+
+        var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient('bottom')
+            .ticks(5);
+        var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient('left')
+            .ticks(5);
 
         var svg = d3.select(el)
             .append('svg')
@@ -60,6 +70,15 @@ scatterChartsModule.directive('scatterChart', function() {
             .attr('y', function(d) {
                 return yScale(d[1]);
             });
+
+        svg.append('g')
+            .attr('class', 'axis')
+            .attr('transform', 'translate(0,'+(h-padding)+')')
+            .call(xAxis);
+        svg.append('g')
+            .attr('class', 'axis')
+            .attr('transform', 'translate('+padding+',0)')
+            .call(yAxis);
 
         scope.$watch(function () {
             return el.clientWidth * el.clientHeight;
