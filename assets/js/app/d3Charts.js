@@ -45,4 +45,9 @@ d3ChartsModule.controller('D3ChartsCtrl', function($scope, $window) {
     angular.element($window).on('resize', function() {
         $scope.$apply();
     });
+
+    $scope.scatterChartData = [
+        [5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+        [410, 12], [475, 44], [25, 67], [85, 21], [220, 88]
+    ];
 });

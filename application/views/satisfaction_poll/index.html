@@ -69,9 +69,14 @@
         <!--data-ac-data="d3Data"></div>-->
         <!--</div>-->
 
-        <div class="col-md-6"
+        <div class="col-md-6 bordered"
              ng-controller="D3ChartsCtrl">
             <bar-chart chart-data="chartData">
+        </div>
+
+        <div class="col-md-6 bordered"
+             ng-controller="D3ChartsCtrl">
+            <scatter-chart chart-data="scatterChartData">
         </div>
 
         <!--<div bar-chart class="col-md-6" style="min-width: 400px; min-height: 400px;"></div>-->
@@ -98,5 +103,6 @@
 <script src="/assets/js/app/d3Charts.js"></script>
 <script src="/assets/js/directives/inputFile.js"></script>
 <script src="/assets/js/directives/donut-chart.js"></script>
+<script src="/assets/js/directives/scatterCharts.js"></script>
 <script src="/assets/js/directives/barChart.js"></script>
 </body>

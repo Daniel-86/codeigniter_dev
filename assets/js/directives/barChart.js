@@ -101,7 +101,7 @@ barChartModule.directive('barChart', function() {
                 })
                 .attr('width', w/data.length - barPadding)
                 .attr('height', function(d) {
-                    return (d/h)*40;
+                    return (d)*40;
                 });
 
             texts.attr('x', function(d, i) {
