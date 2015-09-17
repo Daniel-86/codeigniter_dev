@@ -1,10 +1,10 @@
 'use strict';
 
-var d3ChartsModule = angular.module('d3Charts', ['angularCharts']);
+var d3ChartsModule = angular.module('d3Charts', []);
 
-d3ChartsModule.controller('D3ChartsCtrl', function($scope) {
+d3ChartsModule.controller('D3ChartsCtrl', function($scope, $window) {
     $scope.d3Config = {
-        title: 'Algún título',
+        title: 'AlgÃºn tÃ­tulo',
         tooltips: true,
         labels: false,
         mouseover: function() {},
@@ -34,4 +34,15 @@ d3ChartsModule.controller('D3ChartsCtrl', function($scope) {
             'tooltip': 'Esto es un tooltip'
         }
     };
+
+    $scope.chartData = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+        11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+
+    $scope.charts = d3.range(10).map(function() {
+        return d3.range(10).map(Math.random);
+    });
+
+    angular.element($window).on('resize', function() {
+        $scope.$apply();
+    });
 });

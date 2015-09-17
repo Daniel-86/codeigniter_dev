@@ -8,6 +8,6 @@
  */
 class satisfaction_poll extends CI_Controller {
     function loadForm() {
-        $this->load->view('satisfaction_poll/index');
+        $this->load->view('satisfaction_poll/index.html');
     }
 }

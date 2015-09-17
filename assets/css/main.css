@@ -18,3 +18,15 @@
     cursor: inherit;
     display: block;
 }
+
+.chart {
+    width: 500px;
+    height: 500px;
+}
+
+donut-chart, bar-chart {
+    width: 100%;
+    height: 100%;
+    display: block;
+    float: left;
+}
