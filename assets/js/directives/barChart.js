@@ -57,22 +57,45 @@ barChartModule.directive('barChart', function() {
             h = el.clientHeight,
             barPadding = 1;
         var data = scope.chartData;
-        //var data = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
-        //    11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
-        //var data = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13 ];
+        var xLabels = scope.xLabels;
 
-        var padding = 20;
-        var xScale = d3.scale.linear()
-            .domain([0, d3.max(data, function(d) { return d[0];})])
-            .range([padding, w - padding*2]);
+        var xPadding = 20;
+        var yPadding = 90;
+        //var xScale = d3.scale.linear()
+        //    .domain([0, d3.max(data, function(d) { return d;})])
+        //    .range([padding, w - padding*2]);
+        var xScale = d3.scale.ordinal()
+            .domain(xLabels)
+            .rangeBands([xPadding, w]);
         var yScale = d3.scale.linear()
-            .domain([0, d3.max(data, function(d) { return d[1];})])
-            .range([h - padding, padding]);
+            .domain([0, d3.max(data, function(d) { return d;})])
+            .range([h - yPadding, yPadding]);
+
+        var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient('bottom');
+        var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient('left')
+            .ticks(4);
 
         var svg = d3.select(el)
             .append('svg')
             .attr('width', w)
             .attr('height', h);
+
+        //svg.selectAll('line.x')
+        //    .data();
+        var yGrid = svg.selectAll('line.y')
+            .data(yScale.ticks(4))
+            .enter().append('line')
+            .attr('class', 'grid')
+            .attr('x1', xPadding)
+            .attr('x2', w)
+            .attr('y1', yScale)
+            .attr('y2', yScale)
+            .style('stroke', '#ccc');
+
         var rects = svg.selectAll('rect')
             .data(data)
             .enter()
@@ -80,17 +103,31 @@ barChartModule.directive('barChart', function() {
             .attr('fill', function(d) {
                 return "rgb(0, 0, " + (d * 10) + ")";
             });
-        var texts = svg.selectAll('text')
-            .data(data)
-            .enter()
-            .append('text')
-            .text(function(d){
-                return d;
-            })
-            .attr("font-family", "sans-serif")
-            .attr("font-size", "11px")
-            .attr("fill", "white")
-            .attr("text-anchor", "middle");
+        //var texts = svg.selectAll('text')
+        //    .data(data)
+        //    .enter()
+        //    .append('text')
+        //    .text(function(d){
+        //        return d;
+        //    })
+        //    .attr("font-family", "sans-serif")
+        //    .attr("font-size", "11px")
+        //    .attr("fill", "white")
+        //    .attr("text-anchor", "middle");
+
+        var drawnAxis = svg.append('g')
+            .attr('class', 'x axis')
+            .attr('transform', 'translate(0,'+(h-yPadding)+')')
+            .call(xAxis)
+            .selectAll('text')
+            .style('text-anchor', 'end')
+            .attr('dx', '-.8em')
+            .attr('dy', '-.45em')
+            .attr('transform', 'rotate(-90)');
+        svg.append('g')
+            .attr('class', 'axis')
+            .attr('transform', 'translate('+xPadding+',0)')
+            .call(yAxis);
 
         scope.$watch(function () {
             return el.clientWidth * el.clientHeight;
@@ -102,22 +139,30 @@ barChartModule.directive('barChart', function() {
                 .attr('height', h);
 
             rects.attr('x', function(d, i) {
-                return i * (w/data.length);
+                return i * ((w-xPadding)/data.length) + xPadding;
             })
                 .attr('y', function(d) {
-                    return h - d*15;
+                    //return h - d*15;
+                    return yScale(d);
                 })
-                .attr('width', w/data.length - barPadding)
+                .attr('width', (w-xPadding)/data.length - barPadding)
                 .attr('height', function(d) {
-                    return (d)*40;
+                    //return (d)*40;
+                    return (h-yPadding)-yScale(d);
                 });
 
-            texts.attr('x', function(d, i) {
-                return i * (w/data.length) + w/(2*data.length) - barPadding;
-            })
-                .attr('y', function(d, i) {
-                    return h - (d*15) + 15;
-                });
+            //texts.attr('x', function(d, i) {
+            //    return i * ((w-padding)/data.length) + (w-padding)/(2*data.length) - barPadding + padding;
+            //})
+            //    .attr('y', function(d, i) {
+            //        //return h - (d*15) + 15;
+            //        return yScale(d) + 15;
+            //    });
+
+            xScale.rangeBands([xPadding, w]);
+            yScale.range([h - yPadding, yPadding]);
+            yGrid.attr('x2', w);
+            //drawnAxis.attr('transform', 'translate(0,'+(h-yPadding)+')');
         });
     }
 
@@ -125,6 +170,6 @@ barChartModule.directive('barChart', function() {
     return {
         restrict: 'AE',
         link: function(scope, element) {barChartSVG(scope, element);},
-        scope: {chartData: '='}
+        scope: {chartData: '=', xLabels: '='}
     }
 });
