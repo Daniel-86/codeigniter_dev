@@ -69,15 +69,17 @@
         <!--data-ac-data="d3Data"></div>-->
         <!--</div>-->
 
-        <div class="col-md-6 bordered"
+        <div class="col-md-6 bordered chart-responsive"
              ng-controller="D3ChartsCtrl">
             <bar-chart chart-data="chartData"
-                       data-x-labels="xLabels">
+                       data-x-labels="xLabels"
+                       class="chart-test-height">
         </div>
 
-        <div class="col-md-6 bordered"
+        <div class="col-md-6 bordered chart-responsives"
              ng-controller="D3ChartsCtrl">
-            <scatter-chart chart-data="scatterChartData">
+            <scatter-chart chart-data="scatterChartData"
+                           class="chart-test-sizes">
         </div>
 
         <!--<div bar-chart class="col-md-6" style="min-width: 400px; min-height: 400px;"></div>-->
