@@ -1,0 +1,52 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <title>Bar Chart</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.css">
+    <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body ng-app="rootModule">
+
+<div class="container">
+    <div class="row"
+         ng-controller="D3ChartsCtrl">
+
+        <div class="col-md-6 bordered chart-responsive">
+            <bar-chart chart-data="chartVals"
+                       data-x-axis="barXAxis"
+                       data-y-axis="barYAxis"
+                       data-x-labels="chartXLabels"
+                       class="chart-test-height">
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="xaxisheight">xAxis height</label>
+                <input type="number"
+                       class="form-control"
+                       ng-model="barXAxis.height"
+                       id="xaxisheight">
+            </div>
+            <div class="form-group">
+                <label for="yaxisheight">yAxis width</label>
+                <input type="number"
+                       class="form-control"
+                       ng-model="barYAxis.width"
+                       id="yaxisheight">
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="/assets/js/angular.js"></script>
+<script src="/bower_components/d3/d3.js"></script>
+<script src="/bower_components/angular-charts/dist/angular-charts.js"></script>
+<script src="/assets/js/app/app.js"></script>
+<script src="/assets/js/app/d3Charts.js"></script>
+<script src="/assets/js/directives/inputFile.js"></script>
+<script src="/assets/js/directives/donut-chart.js"></script>
+<script src="/assets/js/directives/scatterCharts.js"></script>
+<script src="/assets/js/directives/barChart.js"></script>
+</body>
