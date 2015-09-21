@@ -1,0 +1,84 @@
+xAxisHeight
+===============================================================================
+vars
+  xAxis.height
+  chart.height
+  yLegend.y
+  yLegend.height
+  yAxis.height
+  xAxis.y
+
+nodes
+  yScale {x: chart.height}
+  ('.x.axis') {transform: translate(y=xAxis.y)}
+    text {style: text-anchor=end, dx: -.8em, dy: -45em}
+  ('.y.axis') call(yFn)
+  ('.y-legend') {transform: translate(y=yLegend.y)}
+  ('.grid') {y1: yScale, y2: yScale}
+  rects {y: yScale(d), height: chart.height-yScale(d)}
+
+
+
+  yAxisWidth
+  ===============================================================================
+  vars
+    yAxisWidth
+    chart.x
+    chart.width
+    xLegend.x
+    xLegend.width
+    xAxis.width
+    xAxis.x
+
+  nodes
+    xScale rangeRoundBands([0, chart.width])
+    ('.x.axis') {transform: translate(x=xAxis.x)} call(xFn)
+      text {style: text-anchor=end, dx: -.8em, dy: -45em}
+    ('.x-legend') {transform: translate(x=xLegend.x)}
+    ('.y.axis') {transform: translate(?)}
+    ('.grid') {x2: chart.width, transform; translate(x=chart.x)}
+    ('.chart-body') {transform: translate(x=chart.x)}
+    rects {width: xScale.rangeBand, x=xScale(...)}
+
+
+
+  yLegendWidth
+  ===============================================================================
+  vars
+    yLegendWidth
+    yAxis.x
+    chart.x
+    chart.width
+
+  nodes
+    xScale rangeRoundBands([0, chart.width])
+    ('.x.axis') {transform: translate(x=xAxis.x)} call(xFn)
+      text {style: text-anchor=end, dx: -.8em, dy: -45em}
+    ('.x-legend') {transform: translate(x=xLegend.x)}
+    ('.y.axis') {transform: translate(x?)}
+    ('.grid') {x2: chart.width, transform; translate(x=chart.x)}
+    ('.chart-body') {transform: translate(x=chart.x)}
+    rects {width: xScale.rangeBand, x=xScale(...)}
+
+
+
+
+xLegendHeight
+=================================================================================
+vars
+  xLegend.height
+  xLegend.y
+  chart.height
+  yLegend.y
+  yLegend.height
+  yAxis.height
+  xAxis.y
+
+nodes
+  yScale {x: chart.height}
+  ('.x.axis') {transform: translate(y=xAxis.y)}
+    text {style: text-anchor=end, dx: -.8em, dy: -45em}
+  ('.y.axis') call(yFn)
+  ('.y-legend') {transform: translate(y=yLegend.y)}
+  ('.grid') {y1: yScale, y2: yScale}
+  rects {y: yScale(d), height: chart.height-yScale(d)}

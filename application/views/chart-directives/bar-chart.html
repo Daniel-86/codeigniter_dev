@@ -17,6 +17,9 @@
             <bar-chart chart-data="chartVals"
                        data-x-axis="barXAxis"
                        data-y-axis="barYAxis"
+                       data-x-legend="barXLegend"
+                       data-y-legend="barYLegend"
+                       data-title-label="barTitleLabel"
                        data-x-labels="chartXLabels"
                        class="chart-test-height">
         </div>
@@ -29,11 +32,53 @@
                        id="xaxisheight">
             </div>
             <div class="form-group">
-                <label for="yaxisheight">yAxis width</label>
+                <label for="yaxiswidth">yAxis width</label>
                 <input type="number"
                        class="form-control"
                        ng-model="barYAxis.width"
-                       id="yaxisheight">
+                       id="yaxiswidth">
+            </div>
+            <div class="form-group">
+                <label for="ylegendwidth">yLegend width</label>
+                <input type="number"
+                       class="form-control"
+                       ng-model="barYLegend.width"
+                       id="ylegendwidth">
+            </div>
+            <div class="form-group">
+                <label for="ylegendtext">yLegend Text</label>
+                <input type="text"
+                       class="form-control"
+                       ng-model="barYLegend.text"
+                       id="ylegendtext">
+            </div>
+            <div class="form-group">
+                <label for="xlegendheight">xLegend height</label>
+                <input type="number"
+                       class="form-control"
+                       ng-model="barXLegend.height"
+                       id="xlegendheight">
+            </div>
+            <div class="form-group">
+                <label for="xlegendtext">xLegend Text</label>
+                <input type="text"
+                       class="form-control"
+                       ng-model="barXLegend.text"
+                       id="xlegendtext">
+            </div>
+            <div class="form-group">
+                <label for="charttitleheight">title height</label>
+                <input type="number"
+                       class="form-control"
+                       ng-model="barTitleLabel.height"
+                       id="charttitleheight">
+            </div>
+            <div class="form-group">
+                <label for="charttitletext">title Text</label>
+                <input type="text"
+                       class="form-control"
+                       ng-model="barTitleLabel.text"
+                       id="charttitletext">
             </div>
         </div>
 

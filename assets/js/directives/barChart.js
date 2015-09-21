@@ -13,11 +13,28 @@ var barChartModule = angular.module('barCharts', []);
  * @param {Array=} data-x-labels Array containing labels for x axis.
  * @param {Object} data-x-axis Array containing x axis configurations: height, labels.
  * @param {Object} data-y-axis Array containing y axis configurations: width.
+ * @param {Object} data-y-legend Array containing y legend configurations: width, text and padding.
+ * @param {Object} data-x-legend Array containing x legend configurations: height, text and padding.
+ * @param {Object} data-title-label Array containing chart title configurations: height, text and padding.
  *
  */
 barChartModule.directive('barChart', function() {
 
     function barChartSVG(scope, element) {
+
+        var paddingDefault = {
+            top: 4,
+            bottom: 4,
+            left: 4,
+            right: 4
+        };
+
+        if(!scope.xAxis) scope.xAxis = {};
+        if(!scope.yAxis) scope.yAxis = {};
+        if(!scope.yLegend) scope.yLegend = {width: 20, text: 'Y - LEGEND', padding: paddingDefault};
+        if(!scope.xLegend) scope.xLegend = {height: 20, text: 'X - LEGEND', padding: paddingDefault};
+        if(!scope.titleLabel) scope.titleLabel = {height: 50, text: 'GRÁFICO', padding: paddingDefault};
+
         var el = element[0];
 
         scope.currentSel = {};
@@ -29,10 +46,12 @@ barChartModule.directive('barChart', function() {
         var yAxis = {
             width: scope.yAxis.width || 20
         };
+        scope.yAxis = yAxis;
         var xAxis = {
             height: scope.xAxis.height || 90,
             labels: scope.xAxis.labels || scope.xLabels
         };
+        scope.xAxis = xAxis;
         var padding = {
             top: 10,
             right: 5,
@@ -40,23 +59,23 @@ barChartModule.directive('barChart', function() {
             left: 25
         };
         var xLegend = {
-            height: 20,
-            text: 'X - LEGEND',
-            padding: {
+            height: scope.xLegend.height || 20,
+            text: scope.xLegend.text || 'X - LEGEND',
+            padding: scope.xLegend.padding || {
                 top: 4
             }
         };
         var yLegend = {
-            width: 20,
-            text: 'Y - LEGEND',
-            padding: {
+            width: scope.yLegend.width || 20,
+            text: scope.yLegend.text || 'Y - LEGEND',
+            padding: scope.yLegend.padding || {
                 left: 5
             }
         };
         var titleLabel = {
-            height: 50,
-            text: 'GRÁFICO',
-            padding: {
+            height: scope.titleLabel.height || 50,
+            text: scope.titleLabel.text || 'GRÁFICO',
+            padding: scope.titleLabel.padding || {
                 bottom: 6
             }
         };
@@ -369,6 +388,78 @@ barChartModule.directive('barChart', function() {
         scope.$watch('xAxis.height', function(newVal) {
             console.log('xAxis height modified');
             xAxis.height = newVal;
+            updatexAxisHeight();
+        });
+
+        scope.$watch('yAxis.width', function(newVal) {
+            yAxis.width = newVal;
+            updateYAxisWidth();
+        });
+
+        scope.$watch('yLegend.text', function(newVal) {
+            yLegend.text = newVal;
+
+            chartGraph.select('.y-legend')
+                .select('text')
+                .text(yLegend.text);
+        });
+
+        scope.$watch('xLegend.text', function(newVal) {
+            xLegend.text = newVal;
+
+            chartGraph.select('.x-legend')
+                .select('text')
+                .text(xLegend.text);
+        });
+
+        scope.$watch('titleLabel.text', function(newVal) {
+            titleLabel.text = newVal;
+
+            chartGraph.select('.chart-title')
+                .select('text')
+                .text(titleLabel.text);
+        });
+
+        scope.$watch('yLegend.width', function(newVal) {
+            console.log('yLegend.width modified');
+            yLegend.width = newVal;
+            yAxis.x = yLegend.x+yLegend.width;
+            svg.select('.y-legend')
+                .select('text')
+                .style('font-size', (yLegend.width-yLegend.padding.left));
+            chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(xLegend.y-xLegend.padding.top)+')');
+            chartGraph.select('.y-legend')
+                .attr('transform', 'translate('+(yLegend.x+yLegend.width-yLegend.padding.left)+','+yLegend.y+')');
+            updateYAxisWidth();
+        });
+
+        scope.$watch('xLegend.height', function(newVal) {
+            xLegend.height = newVal;
+            xLegend.y = h - xLegend.height - padding.bottom;
+            svg.select('.x-legend')
+                .select('text')
+                .style('font-size', (xLegend.height-xLegend.padding.top));
+            //chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(xLegend.y-xLegend.padding.top)+')');
+            updatexAxisHeight();
+        });
+
+        scope.$watch('titleLabel.height', function(newVal) {
+            titleLabel.height = newVal;
+            xLegend.y = h - xLegend.height - padding.bottom;
+            svg.select('.chart-title')
+                .select('text')
+                .style('font-size', (titleLabel.height-titleLabel.padding.bottom));
+            chartGraph.select('.y-legend')
+                .attr('transform', 'translate('+(yLegend.x+yLegend.width-yLegend.padding.left)+','+yLegend.y+')');
+            redrawGraph();
+            updatexAxisHeight();
+        });
+
+
+
+
+
+        function updatexAxisHeight() {
             chart.height = xLegend.y - xAxis.height - chart.y;
             yLegend.y = chart.y + chart.height/2;
             yLegend.height = chart.height;
@@ -404,13 +495,9 @@ barChartModule.directive('barChart', function() {
                 .duration(500)
                 .attr('y', function(d) {return yScale(d);})
                 .attr('height', function(d) {return chart.height-yScale(d);});
+        }
 
-
-        });
-
-        scope.$watch('yAxis.width', function(newVal) {
-            yAxis.width = newVal;
-
+        function updateYAxisWidth() {
             chart.x = yLegend.x+yLegend.width + yAxis.width;
             chart.width = w - (yLegend.x+yLegend.width) - yAxis.width - padding.left;
             xLegend.x = chart.x + chart.width/2;
@@ -454,7 +541,125 @@ barChartModule.directive('barChart', function() {
 
             tooltipContainer.attr('transform', 'translate('+(chart.x)+','+chart.y+')');
             //dataTooltip.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2-tooltipWidth/2)+','+(yScale(d)-tooltipHeight-2)+')');
-        });
+        }
+
+
+        function redrawGraph() {
+            yLegend.x = padding.right;
+            xLegend.y = h - xLegend.height - padding.bottom;
+            yAxis.y = titleLabel.y+titleLabel.height;
+            chart.y = yAxis.y;
+            chart.x = yLegend.x+yLegend.width + yAxis.width;
+            chart.height = xLegend.y - xAxis.height - chart.y;
+            chart.width = w - (yLegend.x+yLegend.width) - yAxis.width - padding.left;
+            yLegend.y = chart.y + chart.height/2;
+            yLegend.height = chart.height;
+            yAxis.x = yLegend.x+yLegend.width;
+            yAxis.height = chart.height;
+            xLegend.x = chart.x + chart.width/2;
+            xLegend.width = chart.width;
+            xAxis.x = chart.x;
+            xAxis.y = chart.y + chart.height;
+            xAxis.width = chart.width;
+
+            bar.width = (chart.width-(data.length-1)*bar.padding)/data.length;
+
+            svg.attr('width', w)
+                .attr('height', h);
+
+            chartGraph.select('.chart-title').attr('transform', 'translate('+titleLabel.x+','+(titleLabel.y+titleLabel.height-titleLabel.padding.bottom)+')');
+
+            xScale.rangeRoundBands([0, chart.width], bar.padding/bar.width, 0);
+            yScale.range([chart.height, 0]);
+
+            chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(xLegend.y-xLegend.padding.top)+')');
+            chartGraph.select('.x.axis')
+                .attr('transform', 'translate('+xAxis.x+','+xAxis.y+')')
+                .call(xFn)
+                .selectAll('text')
+                .style('text-anchor', 'end')
+                .attr('dx', '-.8em')
+                .attr('dy', '-.45em');
+
+            chartGraph.select('.y-legend')
+                .attr('transform', 'translate('+(yLegend.x+yLegend.width-yLegend.padding.left)+','+yLegend.y+')');
+            chartGraph.select('.y.axis')
+                .attr('transform', 'translate('+(yAxis.x+yAxis.width)+','+yAxis.y+')');
+
+            chartGraph.select('.ygrid')
+                .selectAll('line')
+                .attr('x1', 0)
+                .attr('x2', chart.width)
+                .attr('y1', yScale)
+                .attr('y2', yScale);
+            chartGraph.select('.ygrid')
+                .attr('transform', 'translate('+chart.x+','+chart.y+')');
+
+            chartGraph.select('.chart-body')
+                .attr('transform', 'translate('+(chart.x)+','+chart.y+')');
+            rects.attr('width', xScale.rangeBand())
+                .attr('x', function(d, i) {
+                    return xScale(xAxis.labels[i]);
+                })
+                .transition()
+                .duration(500)
+                .attr('y', function(d) {return yScale(d);})
+                .attr('height', function(d) {return chart.height-yScale(d);});
+            //if(scope.currentSel.x) {
+            //    svg.select('.bar-selected')
+            //        .attr('x', scope.currentSel.x - (xScale.rangeBand()) * .3 / 2)
+            //        .attr('y', scope.currentSel.y)
+            //        .transition()
+            //        .duration(500)
+            //        .attr('width', scope.currentSel.width * 1.3)
+            //        .attr('height', scope.currentSel.height);
+            //}
+            //svg.select('.bar-selected')
+            //    .style('display', 'none');
+            //tooltipContainer.style('display', 'none');
+            if(scope.currentSel.nodo){
+                scope.currentSel.nodo.on('mouseleave').apply(this);
+            }
+            //scope.currentSel = {};
+
+            rects.on('mouseenter', function(d, i) {
+                console.log('mouse enter');
+                dataTooltip.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2-tooltipWidth/2)+','+(yScale(d)-tooltipHeight-2)+')');
+                dataTooltipText.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2)+','+(yScale(d)-tooltipHeight-2)+')');
+
+
+
+
+                var x = xScale(xAxis.labels[i]),
+                    y = d3.select(this).attr('y'),
+                    width = d3.select(this).attr('width');
+                tooltipContainer.style('display', 'block');
+                dataTooltipText.select('text')
+                    .text(d);
+
+                scope.currentSel.nodo = d3.select(this);
+                scope.currentSel.width = d3.select(this).attr('width');
+                scope.currentSel.x = d3.select(this).attr('x');
+                scope.currentSel.y = d3.select(this).attr('y');
+                scope.currentSel.height = d3.select(this).attr('height');
+                scope.currentSel.fill = d3.select(this).attr('fill');
+                chartGraph.select('.bar-selected')
+                    .style('display', '')
+                    .attr('x', scope.currentSel.x-(xScale.rangeBand())*.3/2)
+                    .attr('y', scope.currentSel.y)
+                    .attr('width', scope.currentSel.width*1.3)
+                    .attr('height', scope.currentSel.height)
+                    .attr('fill', scope.currentSel.fill);
+            });
+            rects.on('mouseleave', function() {
+                console.log('mouse leave');
+                tooltipContainer.style('display', 'none');
+                svg.select('.bar-selected')
+                    .style('display', 'none');
+                scope.currentSel = {};
+            });
+        }
+
     }
 
 
@@ -464,6 +669,11 @@ barChartModule.directive('barChart', function() {
         scope: {chartData: '=',
             xLabels: '=',
             xAxis: '=',
-            yAxis: '='}
+            yAxis: '=',
+            xLegend: '=',
+            yLegend: '=',
+            titleLabel: '='}
     }
 });
+
+
