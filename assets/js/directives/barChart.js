@@ -17,47 +17,96 @@ barChartModule.directive('barChart', function() {
     function barChartSVG(scope, element) {
         var el = element[0];
 
+        scope.currentSel = {};
+
         var data = scope.chartData;
-        var xLabels = scope.xLabels;
 
         var w = el.clientWidth,
-            h = el.clientHeight,
-            barPadding = 1;
+            h = el.clientHeight;
         var yAxis = {
             width: 20
         };
         var xAxis = {
-            height: 90
+            height: 90,
+            labels: scope.xLabels
         };
         var padding = {
             top: 10,
             right: 5,
             bottom: 5,
-            left: 5
+            left: 25
         };
         var xLegend = {
             height: 20,
-            text: 'X - LEGEND'
+            text: 'X - LEGEND',
+            padding: {
+                top: 4
+            }
         };
         var yLegend = {
             width: 20,
-            text: 'Y - LEGEND'
+            text: 'Y - LEGEND',
+            padding: {
+                left: 5
+            }
         };
         var titleLabel = {
             height: 50,
-            text: 'GRÁFICO'
+            text: 'GRÁFICO',
+            padding: {
+                bottom: 6
+            }
         };
         var chart = {};
+        var bar = {padding: 5};
+
+
+
+        titleLabel.width = w;
+        titleLabel.x = titleLabel.width/2;
+        titleLabel.y = padding.top;
+
+        yLegend.x = padding.right;
+        xLegend.y = h - xLegend.height - padding.bottom;
+        yAxis.y = titleLabel.y+titleLabel.height;
+        chart.y = yAxis.y;
+        chart.x = yLegend.x+yLegend.width + yAxis.width;
+        chart.height = xLegend.y - xAxis.height - chart.y;
+        chart.width = w - (yLegend.x+yLegend.width) - yAxis.width - padding.left;
+        yLegend.y = chart.y + chart.height/2;
+        yLegend.height = chart.height;
+        yAxis.x = yLegend.x+yLegend.width;
+        yAxis.height = chart.height;
+        xLegend.x = chart.x + chart.width/2;
+        xLegend.width = chart.width;
+        xAxis.x = chart.x;
+        xAxis.y = chart.y + chart.height;
+        xAxis.width = chart.width;
+
+        bar.width = (chart.width-(data.length-1)*bar.padding)/data.length;
+
 
         var svg = d3.select(el)
-            .append('svg')
-            .attr('width', w)
+            .append('svg');
+        var chartGraph = svg.append('g')
+            .attr('class', 'graph');
+        svg.attr('width', w)
             .attr('height', h);
 
+        chartGraph.append('g')
+            .attr('class', 'chart-title')
+            .append('text')
+            .text(titleLabel.text)
+            .style('font-size', (titleLabel.height-titleLabel.padding.bottom))
+            .attr('class', 'claseTExto');
+        chartGraph.select('.chart-title').attr('transform', 'translate('+titleLabel.x+','+(titleLabel.y+titleLabel.height-titleLabel.padding.bottom)+')');
+
         var xScale = d3.scale.ordinal()
-            .domain(xLabels);
+            .domain(xAxis.labels);
         var yScale = d3.scale.linear()
             .domain([0, d3.max(data, function(d) { return d;})]);
+        xScale.rangeRoundBands([0, chart.width], bar.padding/bar.width, 0);
+        yScale.range([chart.height, 0]);
 
         var xFn = d3.svg.axis()
             .scale(xScale)
@@ -67,7 +116,42 @@ barChartModule.directive('barChart', function() {
             .orient('left')
             .ticks(4);
 
-        svg.append('g')
+        chartGraph.append('g')
+            .attr('class', 'x-legend')
+            .append('text')
+            .text(xLegend.text)
+            .style('font-size', (xLegend.height-xLegend.padding.top))
+            .attr('class', 'claseTExto');
+        chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(xLegend.y-xLegend.padding.top)+')');
+
+        chartGraph.append('g')
+            .attr('class', 'x axis')
+            .call(xFn)
+            .selectAll('text')
+            .style('text-anchor', 'end')
+            .attr('dx', '-.8em')
+            .attr('dy', '-.45em')
+            .attr('transform', 'rotate(-85)');
+        chartGraph.select('.x.axis')
+            .attr('transform', 'translate('+xAxis.x+','+xAxis.y+')');
+
+        chartGraph.append('g')
+            .attr('class', 'y-legend')
+            .append('text')
+            .text(yLegend.text)
+            .attr('transform', 'rotate(-90)')
+            .style('font-size', (yLegend.width-yLegend.padding.left))
+            .attr('class', 'claseTExto');
+        chartGraph.select('.y-legend')
+            .attr('transform', 'translate('+(yLegend.x+yLegend.width-yLegend.padding.left)+','+yLegend.y+')');
+
+        chartGraph.append('g')
+            .attr('class', 'y axis')
+            .call(yFn);
+        chartGraph.select('.y.axis')
+            .attr('transform', 'translate('+(yAxis.x+yAxis.width)+','+yAxis.y+')');
+
+        chartGraph.append('g')
             .attr('class', 'ygrid')
             .selectAll('line.y')
             .data(yScale.ticks(4))
@@ -76,50 +160,82 @@ barChartModule.directive('barChart', function() {
             .attr('y1', yScale)
             .attr('y2', yScale)
             .style('stroke', '#ccc');
+        chartGraph.select('.ygrid')
+            .selectAll('line')
+            .attr('x1', 0)
+            .attr('x2', chart.width)
+            .attr('y1', yScale)
+            .attr('y2', yScale);
+        chartGraph.select('.ygrid')
+            .attr('transform', 'translate('+chart.x+','+chart.y+')');
 
-        var rects = svg.append('g')
-            .attr('class', 'chart-body')
+        chartGraph.append('g')
+            .attr('class', 'chart-body');
+        chartGraph.select('.chart-body')
+            .attr('transform', 'translate('+(chart.x)+','+chart.y+')');
+        var rects = chartGraph
+            .select('.chart-body')
             .selectAll('rect')
             .data(data)
             .enter()
             .append('rect')
+            .attr('class', 'bar')
+            .attr('height', 0)
             .attr('fill', function(d) {
                 return "rgb(0, 0, " + (d * 10) + ")";
             });
+        rects.attr('width', xScale.rangeBand())
+            .attr('x', function(d, i) {
+                return xScale(xAxis.labels[i]);
+            })
+            .transition()
+            .duration(500)
+            .attr('y', function(d) {return yScale(d);})
+            .attr('height', function(d) {return chart.height-yScale(d);});
 
-        //svg.append('g')
-        //    .attr('class', 'x axis')
-        //    .attr('transform', 'translate(0,'+(h-xAxis.height)+')')
-        //    .call(xFn)
-        //    .selectAll('text')
-        //    .style('text-anchor', 'end')
-        //    .attr('dx', '-.8em')
-        //    .attr('dy', '-.45em')
-        //    .attr('transform', 'rotate(-85)');
-        //svg.append('g')
-        //    .attr('class', 'y axis')
-        //    .attr('transform', 'translate('+yAxis.width+',0)')
-        //    .call(yFn);
 
-        svg.append('g')
-            .attr('class', 'x-legend')
-            .append('text')
-            .text(xLegend.text)
-            .style('font-size', (xLegend.height-4))
-            .attr('class', 'claseTExto');
-        svg.append('g')
-            .attr('class', 'y-legend')
-            .append('text')
-            .text(yLegend.text)
-            .attr('transform', 'rotate(-90)')
-            .style('font-size', (yLegend.width-4))
-            .attr('class', 'claseTExto');
-        svg.append('g')
-            .attr('class', 'chart-title')
-            .append('text')
-            .text(titleLabel.text)
-            .style('font-size', (titleLabel.height-4))
-            .attr('class', 'claseTExto');
+        //var shadowFilter = chartGraph.select('.chart-body').append('defs')
+        //    .append('filter')
+        //    .attr('id', 'shadow')
+        //    .attr('x', 0)
+        //    .attr('y', 0)
+        //    .attr('width', '150%');
+        //shadowFilter.append('feOffset')
+        //    .attr('result', 'offOut')
+        //    .attr('in', 'sourceAlpha');
+        //shadowFilter.append('feGaussianBlur')
+        //    .attr('result', 'blurOut')
+        //    .attr('in', 'offOut')
+        //    .attr('stdDeviation', 50);
+        //shadowFilter.append('feBlend')
+        //    .attr('in2', 'sourceGraphic')
+        //    .attr('in', 'blurOut');
+        //
+        //
+        //
+        var tooltipWidth = 60,
+            tooltipHeight = 30;
+        var tooltipContainer = chartGraph.append('g')
+            .attr('transform', 'translate('+(chart.x)+','+chart.y+')');
+        var dataTooltip = tooltipContainer.append('g')
+            .attr('class', 'data-tooltip');
+        dataTooltip.append('rect')
+            .attr('rx', 5)
+            .attr('ry', 5)
+            .attr('width', tooltipWidth)
+            .attr('height', tooltipHeight);
+        //dataTooltip.append('text')
+        //    .attr('y', 0);
+        tooltipContainer.style('display', 'none');
+        var dataTooltipText = tooltipContainer.append('g')
+            .attr('class', 'data-tooltip-text');
+        dataTooltipText.append('text')
+            .attr('y', (tooltipHeight / 2));
+
+        chartGraph.select('.chart-body')
+            .append('rect')
+            .attr('class', 'bar-selected')
+            .style('display', 'none');
 
         scope.$watch(function () {
             return el.clientWidth * el.clientHeight;
@@ -127,101 +243,124 @@ barChartModule.directive('barChart', function() {
             w = el.clientWidth;
             h = el.clientHeight;
 
-            //titleLabel.width = w;
-            titleLabel.width = w-yAxis.width;
+            titleLabel.width = w;
             titleLabel.x = titleLabel.width/2;
-            titleLabel.y = titleLabel.height;
+            titleLabel.y = padding.top;
 
-            //xLegend.width = w-yAxis.width;
-            xLegend.width = w;
-            xLegend.x = xLegend.width/2 + yLegend.width+yAxis.width;
-            xLegend.y = h-xLegend.height;
+            yLegend.x = padding.right;
+            xLegend.y = h - xLegend.height - padding.bottom;
+            yAxis.y = titleLabel.y+titleLabel.height;
+            chart.y = yAxis.y;
+            chart.x = yLegend.x+yLegend.width + yAxis.width;
+            chart.height = xLegend.y - xAxis.height - chart.y;
+            chart.width = w - (yLegend.x+yLegend.width) - yAxis.width - padding.left;
+            yLegend.y = chart.y + chart.height/2;
+            yLegend.height = chart.height;
+            yAxis.x = yLegend.x+yLegend.width;
+            yAxis.height = chart.height;
+            xLegend.x = chart.x + chart.width/2;
+            xLegend.width = chart.width;
+            xAxis.x = chart.x;
+            xAxis.y = chart.y + chart.height;
+            xAxis.width = chart.width;
 
-            yLegend.height = h-xLegend.height-xAxis.height-3*titleLabel.height/3;
-            yLegend.x = yLegend.width;
-            yLegend.y = (h-3*titleLabel.height/2-xLegend.height-xAxis.height)/2 + 3*titleLabel.height/2;
-
-            yAxis.height= h-xAxis.height-xLegend.height;
-            //yAxis.x = w-yAxis.width-yLegend.width;
-
-            chart.width = w-yAxis.width-3*yLegend.width/2;
-            chart.height= h-xLegend.height-xAxis.height-3*titleLabel.height/2;
-            chart.x = w-chart.width;
-
-            yAxis.x = chart.x;
-            chart.y = 3*titleLabel.height/2;
-            xAxis.y = chart.y+chart.height;
-
-            xScale.rangeBands([chart.x, chart.x+chart.width]);
-            yScale.range([chart.y+chart.height, chart.y]);
+            bar.width = (chart.width-(data.length-1)*bar.padding)/data.length;
 
             svg.attr('width', w)
                 .attr('height', h);
 
-            rects.attr('x', function(d, i) {
-                return i * (chart.width/data.length) + chart.x;
-            })
-                .attr('y', function(d) {
-                    //return h - d*15;
-                    return yScale(d);
-                })
-                .attr('width', chart.width/data.length - barPadding)
-                .attr('height', function(d) {
-                    //return (d)*40;
-                    return chart.y+chart.height-yScale(d);
-                });
+            chartGraph.select('.chart-title').attr('transform', 'translate('+titleLabel.x+','+(titleLabel.y+titleLabel.height-titleLabel.padding.bottom)+')');
 
-            svg.select('.ygrid')
-                .selectAll('line')
-                .attr('x1', chart.x)
-                .attr('x2', w)
-                .attr('y1', yScale)
-                .attr('y2', yScale);
+            xScale.rangeRoundBands([0, chart.width], bar.padding/bar.width, 0);
+            yScale.range([chart.height, 0]);
 
-            svg.select('.x.axis').remove();
-            xFn = d3.svg.axis()
-                .scale(xScale)
-                .orient('bottom');
-            svg.select('.y.axis').remove();
-            yFn = d3.svg.axis()
-                .scale(yScale)
-                .orient('left')
-                .ticks(4);
-
-            svg.append('g')
-                .attr('class', 'x axis')
-                .attr('transform', 'translate(0,'+xAxis.y+')')
+            chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(xLegend.y-xLegend.padding.top)+')');
+            chartGraph.select('.x.axis')
+                .attr('transform', 'translate('+xAxis.x+','+xAxis.y+')')
                 .call(xFn)
                 .selectAll('text')
                 .style('text-anchor', 'end')
                 .attr('dx', '-.8em')
-                .attr('dy', '-.45em')
-                .attr('transform', 'rotate(-85)');
-            svg.append('g')
-                .attr('class', 'y axis')
-                .attr('transform', 'translate('+yAxis.x+',0)')
-                .call(yFn);
+                .attr('dy', '-.45em');
 
-            //xLegend.width = w-yAxis.width;
-            //xLegend.x = xLegend.width/2;
-            //xLegend.y = h-xLegend.height;
-            //chart = {
-            //    width: w-yAxis.width,
-            //    height: h-xLegend.height-xAxis.height
-            //};
-            svg.select('.y-legend').attr('transform', 'translate('+yLegend.x+','+yLegend.y+')');
-            svg.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+xLegend.y+')');
-            svg.select('.chart-title').attr('transform', 'translate('+titleLabel.x+','+titleLabel.y+')');
-            //svg.select('.chart-title').attr('transform', 'translate('+xLegend.x+','+titleLabel.y+')');
-            //svg.select('.x-legend').attr('transform', 'translate('+titleLabel.x+','+xLegend.y+')');
+            chartGraph.select('.y-legend')
+                .attr('transform', 'translate('+(yLegend.x+yLegend.width-yLegend.padding.left)+','+yLegend.y+')');
+            chartGraph.select('.y.axis')
+                .attr('transform', 'translate('+(yAxis.x+yAxis.width)+','+yAxis.y+')');
+
+            chartGraph.select('.ygrid')
+                .selectAll('line')
+                .attr('x1', 0)
+                .attr('x2', chart.width)
+                .attr('y1', yScale)
+                .attr('y2', yScale);
+            chartGraph.select('.ygrid')
+                .attr('transform', 'translate('+chart.x+','+chart.y+')');
+
+            chartGraph.select('.chart-body')
+                .attr('transform', 'translate('+(chart.x)+','+chart.y+')');
+            rects.attr('width', xScale.rangeBand())
+                .attr('x', function(d, i) {
+                    return xScale(xAxis.labels[i]);
+                })
+                .transition()
+                .duration(500)
+                .attr('y', function(d) {return yScale(d);})
+                .attr('height', function(d) {return chart.height-yScale(d);});
+            //if(scope.currentSel.x) {
+            //    svg.select('.bar-selected')
+            //        .attr('x', scope.currentSel.x - (xScale.rangeBand()) * .3 / 2)
+            //        .attr('y', scope.currentSel.y)
+            //        .transition()
+            //        .duration(500)
+            //        .attr('width', scope.currentSel.width * 1.3)
+            //        .attr('height', scope.currentSel.height);
+            //}
+            //svg.select('.bar-selected')
+            //    .style('display', 'none');
+            //tooltipContainer.style('display', 'none');
+            if(scope.currentSel.nodo){
+                scope.currentSel.nodo.on('mouseleave').apply(this);
+            }
+            //scope.currentSel = {};
+
+            rects.on('mouseenter', function(d, i) {
+                console.log('mouse enter');
+                dataTooltip.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2-tooltipWidth/2)+','+(yScale(d)-tooltipHeight-2)+')');
+                dataTooltipText.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2)+','+(yScale(d)-tooltipHeight-2)+')');
 
 
 
 
-            //svg.append('g')
-            //    .attr('class', 'axis')
-            //    .attr('transform', 'translate('+xPadding+',0)')
-            //    .call(yAxis);
+                var x = xScale(xAxis.labels[i]),
+                    y = d3.select(this).attr('y'),
+                    width = d3.select(this).attr('width');
+                tooltipContainer.style('display', 'block');
+                dataTooltipText.select('text')
+                    .text(d);
+
+                scope.currentSel.nodo = d3.select(this);
+                scope.currentSel.width = d3.select(this).attr('width');
+                scope.currentSel.x = d3.select(this).attr('x');
+                scope.currentSel.y = d3.select(this).attr('y');
+                scope.currentSel.height = d3.select(this).attr('height');
+                scope.currentSel.fill = d3.select(this).attr('fill');
+                chartGraph.select('.bar-selected')
+                    .style('display', '')
+                    .attr('x', scope.currentSel.x-(xScale.rangeBand())*.3/2)
+                    .attr('y', scope.currentSel.y)
+                    .attr('width', scope.currentSel.width*1.3)
+                    .attr('height', scope.currentSel.height)
+                    .attr('fill', scope.currentSel.fill);
+            });
+            rects.on('mouseleave', function() {
+                console.log('mouse leave');
+                tooltipContainer.style('display', 'none');
+                svg.select('.bar-selected')
+                    .style('display', 'none');
+                scope.currentSel = {};
+            });
+
         });
     }
 

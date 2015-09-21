@@ -53,4 +53,11 @@ d3ChartsModule.controller('D3ChartsCtrl', function($scope, $window) {
 
     $scope.xLabels = ['uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez',
         'once', 'doce', 'trece', 'catorce', 'quince', 'dieciseis', 'diecisiete', 'dieciocho', 'diecinueve', 'veinte'];
+
+    $scope.bars = [];
+    for(var i=0;i<4;i++) {
+        $scope.bars.push({value: $scope.chartData[i], label: $scope.xLabels[i]});
+    }
+    $scope.chartVals = $scope.bars.map(function(b){return b.value});
+    $scope.chartXLabels = $scope.bars.map(function(b){return b.label});
 });
