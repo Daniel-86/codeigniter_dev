@@ -455,6 +455,16 @@ barChartModule.directive('barChart', function() {
             updatexAxisHeight();
         });
 
+        scope.$watchCollection('xAxis.labels', function (newVal) {
+            var stopHere = true;
+            if(!angular.isArray(newVal)) return;
+            svg.select('.x.axis')
+                .selectAll('text')
+                .text(function(d, i) {
+                    return newVal[i]? newVal[i]: 'NOHAYNADA';
+                });
+        });
+
 
 
 
@@ -624,8 +634,9 @@ barChartModule.directive('barChart', function() {
 
             rects.on('mouseenter', function(d, i) {
                 console.log('mouse enter');
-                dataTooltip.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2-tooltipWidth/2)+','+(yScale(d)-tooltipHeight-2)+')');
-                dataTooltipText.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2)+','+(yScale(d)-tooltipHeight-2)+')');
+                var newX = xScale(xAxis.labels[i]);
+                if(!isNaN(newX)) dataTooltip.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2-tooltipWidth/2)+','+(yScale(d)-tooltipHeight-2)+')');
+                if(!isNaN(newX)) dataTooltipText.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2)+','+(yScale(d)-tooltipHeight-2)+')');
 
 
 

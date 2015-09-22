@@ -80,6 +80,13 @@
                        ng-model="barTitleLabel.text"
                        id="charttitletext">
             </div>
+            <div class="form-group">
+                <label class="control-label" for="xaxislabels">xAxis labels</label>
+                <textarea class="form-control"
+                          make-it-array
+                          data-ng-model="barXAxis.labels"
+                          id="xaxislabels"></textarea>
+            </div>
         </div>
 
     </div>
@@ -94,4 +101,5 @@
 <script src="/assets/js/directives/donut-chart.js"></script>
 <script src="/assets/js/directives/scatterCharts.js"></script>
 <script src="/assets/js/directives/barChart.js"></script>
+<script src="/assets/js/directives/makeitarray.js"></script>
 </body>

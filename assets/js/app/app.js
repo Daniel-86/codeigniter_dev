@@ -5,5 +5,6 @@ var app = angular.module('rootModule', [
     'd3Charts',
     'barCharts',
     'donutChartD3',
-    'scatterCharts'
+    'scatterCharts',
+    'makeitarray'
 ]);
