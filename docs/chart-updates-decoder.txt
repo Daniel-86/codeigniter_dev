@@ -76,9 +76,10 @@ vars
 
 nodes
   yScale {x: chart.height}
+  ('.x-legend') {transform: translate(y=xLegend.y-xLegend.padding.top)}
   ('.x.axis') {transform: translate(y=xAxis.y)}
     text {style: text-anchor=end, dx: -.8em, dy: -45em}
-  ('.y.axis') call(yFn)
+  ('.y.axis') {transform: translate(y=yAxis.y)} call(yFn)
   ('.y-legend') {transform: translate(y=yLegend.y)}
   ('.grid') {y1: yScale, y2: yScale}
   rects {y: yScale(d), height: chart.height-yScale(d)}

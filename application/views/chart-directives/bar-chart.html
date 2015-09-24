@@ -14,78 +14,90 @@
          ng-controller="D3ChartsCtrl">
 
         <div class="col-md-6 bordered chart-responsive">
-            <bar-chart chart-data="chartVals"
+            <bar-chart bars="barBars"
                        data-x-axis="barXAxis"
                        data-y-axis="barYAxis"
                        data-x-legend="barXLegend"
                        data-y-legend="barYLegend"
                        data-title-label="barTitleLabel"
-                       data-x-labels="chartXLabels"
                        class="chart-test-height">
         </div>
         <div class="col-md-6">
-            <div class="form-group">
+            <div class="form-group col-xs-6">
                 <label for="xaxisheight">xAxis height</label>
                 <input type="number"
+                       min="0"
                        class="form-control"
                        ng-model="barXAxis.height"
                        id="xaxisheight">
             </div>
-            <div class="form-group">
+            <div class="form-group col-xs-6">
                 <label for="yaxiswidth">yAxis width</label>
                 <input type="number"
+                       min="0"
                        class="form-control"
                        ng-model="barYAxis.width"
                        id="yaxiswidth">
             </div>
-            <div class="form-group">
+            <div class="form-group col-xs-6">
                 <label for="ylegendwidth">yLegend width</label>
                 <input type="number"
+                       min="0"
                        class="form-control"
                        ng-model="barYLegend.width"
                        id="ylegendwidth">
             </div>
-            <div class="form-group">
+            <div class="form-group col-xs-6">
                 <label for="ylegendtext">yLegend Text</label>
                 <input type="text"
                        class="form-control"
                        ng-model="barYLegend.text"
                        id="ylegendtext">
             </div>
-            <div class="form-group">
+            <div class="form-group col-xs-6">
                 <label for="xlegendheight">xLegend height</label>
                 <input type="number"
+                       min="0"
                        class="form-control"
                        ng-model="barXLegend.height"
                        id="xlegendheight">
             </div>
-            <div class="form-group">
+            <div class="form-group col-xs-6">
                 <label for="xlegendtext">xLegend Text</label>
                 <input type="text"
                        class="form-control"
                        ng-model="barXLegend.text"
                        id="xlegendtext">
             </div>
-            <div class="form-group">
+            <div class="form-group col-xs-6">
                 <label for="charttitleheight">title height</label>
                 <input type="number"
+                       min="0"
                        class="form-control"
                        ng-model="barTitleLabel.height"
                        id="charttitleheight">
             </div>
-            <div class="form-group">
+            <div class="form-group col-xs-6">
                 <label for="charttitletext">title Text</label>
                 <input type="text"
                        class="form-control"
                        ng-model="barTitleLabel.text"
                        id="charttitletext">
             </div>
-            <div class="form-group">
+            <div class="form-group col-xs-12">
                 <label class="control-label" for="xaxislabels">xAxis labels</label>
                 <textarea class="form-control"
                           make-it-array
                           data-ng-model="barXAxis.labels"
                           id="xaxislabels"></textarea>
+            </div>
+            <div class="form-group col-xs-6">
+                <label for="barpadding" class="control-label">Bar padding</label>
+                <input type="number"
+                       min="0"
+                       class="form-control"
+                       ng-model="barBars.padding"
+                       id="barpadding">
             </div>
         </div>
 

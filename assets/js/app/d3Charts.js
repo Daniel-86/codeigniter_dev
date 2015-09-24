@@ -58,18 +58,23 @@ d3ChartsModule.controller('D3ChartsCtrl', function($scope, $window) {
         'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
 
     var xaxix = {};
-    $scope.bars = [];
+    var bars = [];
     for(var i=0;i<8;i++) {
-        $scope.bars.push({value: $scope.chartData[i], label: $scope.xLabels[i]});
+        bars.push({value: $scope.chartData[i], label: $scope.xLabels[i]});
         if(!xaxix.labels) xaxix.labels = [];
         xaxix.labels.push(etiquetas[i]);
     }
     xaxix.height = 40;
-    $scope.chartVals = $scope.bars.map(function(b){return b.value});
-    $scope.chartXLabels = $scope.bars.map(function(b){return b.label});
+    $scope.chartVals = bars.map(function(b){return b.value});
+    $scope.chartXLabels = bars.map(function(b){return b.label});
+
     $scope.barXAxis = xaxix;
     $scope.barYAxis = {width: 14};
     $scope.barXLegend = null;
     $scope.barYLegend = null;
     $scope.barTitleLabel = null;
+    $scope.barBars = {
+        padding: 8,
+        data: $scope.chartVals
+    }
 });

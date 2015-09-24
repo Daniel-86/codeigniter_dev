@@ -111,3 +111,11 @@ scatter-chart {
     stroke: #666;
     stroke-width: 2px 2px 0 2px;
 }
+
+.form-group {
+    float: left;
+}
+
+textarea {
+    resize: none;
+}
