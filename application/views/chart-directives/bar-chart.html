@@ -23,7 +23,32 @@
                        data-title-label="barTitleLabel"
                        shown="shown"
                        subs="subs"
-                       class="chart-test-height">
+                       go-back="isInternal"
+                       class="chart-test-height"></bar-chart>
+            <a href=""
+               ng-show="isInternal"
+               ng-click="isInternal = !isInternal"
+               class="btn btn-link">
+                <span class="glyphicon glyphicon-backward"></span>
+            </a>
+            <div>
+                <table class="table table-stripped table-responsive">
+                    <thead>
+                    <tr>
+                        <th ng-repeat="label in barXAxis.labels">
+                            {{ label }}
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td ng-repeat="val in barBars.data track by $index">
+                            {{ val }}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
         <div class="col-md-6">
             <div class="form-group col-xs-6">

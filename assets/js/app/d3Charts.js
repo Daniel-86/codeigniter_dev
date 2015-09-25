@@ -140,7 +140,8 @@ d3ChartsModule.controller('D3ChartsCtrl', function($scope, $window) {
         return data;
     }
 
-    var subData = testSubDataFactory();
+    //var subData = testSubDataFactory();
+    var subData = subDataFactory();
     var subLabels = subLabelsFactory();
 
     $scope.subs = {data: subData, labels: subLabels};

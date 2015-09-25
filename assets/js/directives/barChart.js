@@ -19,6 +19,7 @@ var barChartModule = angular.module('barCharts', []);
  * @param {Object} data-title-label Array containing chart title configurations: height, text and padding.
  * @param {Object} shown Array indicating which components are gonna be rendered, all of them can be hide except the
  * @param {Object} subs Array containing expanded info for each bar (or something).
+ * @param {boolean} go-back is displaying innner data?.
  *
  */
 barChartModule.directive('barChart', function() {
@@ -230,11 +231,11 @@ barChartModule.directive('barChart', function() {
             .attr('class', 'chart-body');
         chartGraph.select('.chart-body')
             .attr('transform', 'translate('+(chart.x)+','+chart.y+')');
-        var rects = chartGraph
+        var rectsJoins = chartGraph
             .select('.chart-body')
             .selectAll('rect')
-            .data(bars.data)
-            .enter()
+            .data(bars.data);
+        var rects = rectsJoins.enter()
             .append('rect')
             .attr('class', 'bar')
             .attr('height', 0)
@@ -247,9 +248,22 @@ barChartModule.directive('barChart', function() {
                 rootContext.bars = angular.copy(bars);
                 xAxis.labels = scope.subs.labels[i];
                 bars.data = scope.subs.data[i];
+                //if(!bars.fill) bars.fill = {};
+                bars.fill.colors = scope.subs.colors? scope.subs.colors[i]: null;
+                redrawGraphWithNewData();
+                if(!bars.fill.colors) {
+                    colorFactory();
+                    if(!scope.subs.colors) scope.subs.colors = [];
+                    scope.subs.colors[i] = bars.fill.colors;
+                }
+                //bars.fill.colors = scope.bars.fill.colors;
+                updateBarColors();
                 scope.xAxis = xAxis;
                 scope.bars = bars;
-                redrawGraphWithNewData();
+                scope.goBack = true;
+                updateExpandEvents();
+                scope.$apply();
+                var asf = 1;
             });
         rects.attr('width', xScale.rangeBand())
             .attr('x', function(d, i) {
@@ -427,6 +441,23 @@ barChartModule.directive('barChart', function() {
 
         });
 
+        scope.$watch('goBack', function(newVal) {
+            if(!newVal && rootContext && rootContext.bars && rootContext.xAxis) {
+                if(rootContext.xAxis) xAxis = angular.copy(rootContext.xAxis);
+                if(rootContext.bars) bars = angular.copy(rootContext.bars);
+                delete rootContext.xAxis;
+                delete rootContext.bars;
+                redrawGraphWithNewData();
+                //colorFactory();
+                //bars.fill.colors = scope.bars.fill.colors;
+                updateBarColors();
+                scope.xAxis = xAxis;
+                scope.bars = bars;
+                updateExpandEvents();
+                //scope.$apply();
+            }
+        });
+
         scope.$watch('xAxis.height', function(newVal) {
             console.log('xAxis height modified');
             xAxis.height = newVal;
@@ -516,15 +547,16 @@ barChartModule.directive('barChart', function() {
 
         scope.$watch('bars.fill.type', function(newVal) {
             //console.log('fill type changed');
-            if(!bars.fill) bars.fill = {};
-            bars.fill.type = newVal;
-            if(bars.fill.type === BAR_FILL_TYPE.RANDOM.code) {
-                refreshRandomColors();
-                //updateBarColors();
-            }
-            else if(bars.fill.type === BAR_FILL_TYPE.UNIFORM_SCALE.code) {
-                refreshUniformScaledColors();
-            }
+            //if(!bars.fill) bars.fill = {};
+            //bars.fill.type = newVal;
+            //if(bars.fill.type === BAR_FILL_TYPE.RANDOM.code) {
+            //    refreshRandomColors();
+            //    //updateBarColors();
+            //}
+            //else if(bars.fill.type === BAR_FILL_TYPE.UNIFORM_SCALE.code) {
+            //    refreshUniformScaledColors();
+            //}
+            colorFactory();
         });
 
         scope.$watch('bars.fill.refreshTrigger', function() {/*console.log('random color refreshment externally' +
@@ -568,8 +600,20 @@ barChartModule.directive('barChart', function() {
         });
 
 
+        function colorFactory() {
+            //if(!bars.fill) bars.fill = {};
+            //bars.fill.type = newVal;
+            if(bars.fill.type === BAR_FILL_TYPE.RANDOM.code) {
+                refreshRandomColors();
+                //updateBarColors();
+            }
+            else if(bars.fill.type === BAR_FILL_TYPE.UNIFORM_SCALE.code) {
+                refreshUniformScaledColors();
+            }
+        }
+
         function updateBarColors() {/*console.log('update bar colors');*/
-            rects.attr('fill', function(d, i) {
+            svg.select('.chart-body').selectAll('rect').attr('fill', function(d, i) {
                 return bars.fill.colors[i];
             });
         }
@@ -833,6 +877,39 @@ barChartModule.directive('barChart', function() {
                 .attr('dy', '-.45em');
         }
 
+        function updateExpandEvents() {
+            if(scope.goBack) {
+                rectsJoins.on('dblclick', null);
+            }
+            else {
+                svg.select('.chart-body')
+                    .selectAll('rect')
+                    .on('dblclick', function(d, i) {
+                        console.log('doble click en :'+i);
+                        rootContext.xAxis = angular.copy(xAxis);
+                        rootContext.bars = angular.copy(bars);
+                        xAxis.labels = scope.subs.labels[i];
+                        bars.data = scope.subs.data[i];
+                        //if(!bars.fill) bars.fill = {};
+                        bars.fill.colors = scope.subs.colors? scope.subs.colors[i]: null;
+                        redrawGraphWithNewData();
+                        if(!bars.fill.colors) {
+                            colorFactory();
+                            if(!scope.subs.colors) scope.subs.colors = [];
+                            scope.subs.colors[i] = bars.fill.colors;
+                        }
+                        //bars.fill.colors = scope.bars.fill.colors;
+                        updateBarColors();
+                        scope.xAxis = xAxis;
+                        scope.bars = bars;
+                        scope.goBack = true;
+                        updateExpandEvents();
+                        scope.$apply();
+                        var asf = 1;
+                    });
+            }
+        }
+
         function redrawGraphWithNewData() {
             bars.width = (chart.width - (bars.data.length - 1) * bars.padding) / bars.data.length;
 
@@ -849,6 +926,10 @@ barChartModule.directive('barChart', function() {
                 .attr('transform', 'rotate(-85)');;
 
             chartGraph.select('.y.axis').call(yFn);
+
+
+
+
 
             //chartGraph.select('.ygrid').remove();
             var auxGrid = chartGraph.select('.ygrid')
@@ -876,18 +957,32 @@ barChartModule.directive('barChart', function() {
             //    .attr('y1', yScale)
             //    .attr('y2', yScale);
 
-            rects.remove();
-            rects = chartGraph
+
+
+
+            rectsJoins = chartGraph
                 .select('.chart-body')
                 .selectAll('rect')
-                .data(bars.data)
+                .data(bars.data);
+            rectsJoins.exit().remove();
+            rects = rectsJoins
                 .enter()
                 .append('rect')
                 .attr('class', 'bar')
-                .attr('height', 0)
-                .attr('fill', function(d, i) {
-                    return bars.fill.colors[i];
-                });
+                .attr('height', 0);
+
+            //rects.remove();
+            //rects = chartGraph
+            //    .select('.chart-body')
+            //    .selectAll('rect')
+            //    .data(bars.data)
+            //    .enter()
+            //    .append('rect')
+            //    .attr('class', 'bar')
+            //    .attr('height', 0)
+            //    .attr('fill', function(d, i) {
+            //        return bars.fill.colors[i];
+            //    });
             rects.attr('width', xScale.rangeBand())
                 .attr('x', function(d, i) {
                     return xScale(xAxis.labels[i]);
@@ -896,22 +991,20 @@ barChartModule.directive('barChart', function() {
                 .duration(500)
                 .attr('y', function(d) {return yScale(d);})
                 .attr('height', function(d) {return chart.height-yScale(d);});
-            //if(scope.currentSel.x) {
-            //    svg.select('.bar-selected')
-            //        .attr('x', scope.currentSel.x - (xScale.rangeBand()) * .3 / 2)
-            //        .attr('y', scope.currentSel.y)
-            //        .transition()
-            //        .duration(500)
-            //        .attr('width', scope.currentSel.width * 1.3)
-            //        .attr('height', scope.currentSel.height);
-            //}
-            //svg.select('.bar-selected')
-            //    .style('display', 'none');
-            //tooltipContainer.style('display', 'none');
+
+            rectsJoins.attr('width', xScale.rangeBand())
+                .attr('x', function(d, i) {
+                    return xScale(xAxis.labels[i]);
+                })
+                .transition()
+                .duration(500)
+                .attr('y', function(d) {return yScale(d);})
+                .attr('height', function(d) {return chart.height-yScale(d);});
+
+
             if(scope.currentSel.nodo){
                 scope.currentSel.nodo.on('mouseleave').apply(this);
             }
-            //scope.currentSel = {};
 
             rects.on('mouseenter', function(d, i) {
                 //console.log('mouse enter');
@@ -966,7 +1059,8 @@ barChartModule.directive('barChart', function() {
             yLegend: '=',
             titleLabel: '=',
             shown: '=',
-            subs: '='}
+            subs: '=',
+            goBack: '='}
     }
 });
 
