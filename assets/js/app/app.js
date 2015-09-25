@@ -6,5 +6,7 @@ var app = angular.module('rootModule', [
     'barCharts',
     'donutChartD3',
     'scatterCharts',
-    'makeitarray'
+    'makeitarray',
+    'colorpicker.module',
+    'rgbcolors'
 ]);

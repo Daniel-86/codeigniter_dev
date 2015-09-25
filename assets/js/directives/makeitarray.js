@@ -15,6 +15,10 @@ makeitarrayModule.directive('makeItArray', function() {
             if(!value) return;
             return value.split(/\s*[,\n]\s*/);
         });
+
+        //ctrl.$formatters.pust(function(value) {
+        //    return value.join('\n');
+        //});
     }
 
     return {

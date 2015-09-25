@@ -17,6 +17,8 @@ var barChartModule = angular.module('barCharts', []);
  * @param {Object} data-y-legend Array containing y legend configurations: width, text and padding.
  * @param {Object} data-x-legend Array containing x legend configurations: height, text and padding.
  * @param {Object} data-title-label Array containing chart title configurations: height, text and padding.
+ * @param {Object} shown Array indicating which components are gonna be rendered, all of them can be hide except the
+ * chart itself.
  *
  */
 barChartModule.directive('barChart', function() {
@@ -25,6 +27,8 @@ barChartModule.directive('barChart', function() {
         if(!scope.bars) throw Error(new CustomException('You must specify data for the chart.', 'DIRECTIVE' +
             ' (bar-chart)'));
 
+        //var colorScale = d3.scale.category20();
+
         var paddingDefault = {
             top: 4,
             bottom: 4,
@@ -32,12 +36,28 @@ barChartModule.directive('barChart', function() {
             right: 4
         };
 
+        var backups = {};
+
         if(!scope.xAxis) scope.xAxis = {};
         if(!scope.yAxis) scope.yAxis = {};
         if(!scope.yLegend) scope.yLegend = {width: 20, text: 'Y - LEGEND', padding: paddingDefault};
         if(!scope.xLegend) scope.xLegend = {height: 20, text: 'X - LEGEND', padding: paddingDefault};
         if(!scope.titleLabel) scope.titleLabel = {height: 50, text: 'GRÁFICO', padding: paddingDefault};
         if(!scope.bars.padding) scope.bars.padding = 5;
+        if(!scope.bars.fill || (scope.bars.fill && !scope.bars.fill.colors)) {
+            if(!scope.bars.fill) scope.bars.fill = {};
+            scope.bars.fill.type = BAR_FILL_TYPE.RANDOM.code;
+            scope.bars.fill.colors = randomColorArray(scope.bars.data.length);
+            scope.bars.fill.refreshTrigger = true;
+            scope.bars.fill.baseColor = '#0000ff';
+        }
+        if(!scope.shown) {scope.shown = {};}
+        if(!scope.shown.xAxis) {scope.shown.xAxis = true;}
+        if(!scope.shown.yAxis) {scope.shown.yAxis = true;}
+        if(!scope.shown.xLegend) {scope.shown.xLegend = true;}
+        if(!scope.shown.yLegend) {scope.shown.yLegend = true;}
+        if(!scope.shown.titleLabel) {scope.shown.titleLabel = true;}
+        if(!scope.shown.grid) {scope.shown.grid = true;}
 
         var el = element[0];
 
@@ -67,6 +87,7 @@ barChartModule.directive('barChart', function() {
                 top: 4
             }
         };
+        scope.xLegend = xLegend;
         var yLegend = {
             width: scope.yLegend.width || 20,
             text: scope.yLegend.text || 'Y - LEGEND',
@@ -74,6 +95,7 @@ barChartModule.directive('barChart', function() {
                 left: 5
             }
         };
+        scope.yLegend = yLegend;
         var titleLabel = {
             height: scope.titleLabel.height || 50,
             text: scope.titleLabel.text || 'GRÁFICO',
@@ -81,10 +103,17 @@ barChartModule.directive('barChart', function() {
                 bottom: 6
             }
         };
+        scope.titleLabel = titleLabel;
         var chart = {};
         var bars = {
             padding: scope.bars.padding || 5,
-            data: scope.bars.data
+            data: scope.bars.data,
+            fill: {
+                type: scope.bars.fill.type,
+                colors: scope.bars.fill.colors,
+                refreshTrigger: scope.bars.fill.refreshTrigger,
+                baseColor: scope.bars.fill.baseColor
+            }
         };
 
 
@@ -208,8 +237,8 @@ barChartModule.directive('barChart', function() {
             .append('rect')
             .attr('class', 'bar')
             .attr('height', 0)
-            .attr('fill', function(d) {
-                return "rgb(0, 0, " + (d * 10) + ")";
+            .attr('fill', function(d, i) {
+                return bars.fill.colors[i];
             });
         rects.attr('width', xScale.rangeBand())
             .attr('x', function(d, i) {
@@ -266,7 +295,8 @@ barChartModule.directive('barChart', function() {
 
         scope.$watch(function () {
             return el.clientWidth * el.clientHeight;
-        }, function() {
+        },
+            function() {
             w = el.clientWidth;
             h = el.clientHeight;
 
@@ -465,8 +495,97 @@ barChartModule.directive('barChart', function() {
             redrawXAxis();
         });
 
+        scope.$watch('bars.fill.type', function(newVal) {
+            console.log('fill type changed');
+            if(!bars.fill) bars.fill = {};
+            bars.fill.type = newVal;
+            if(bars.fill.type === BAR_FILL_TYPE.RANDOM.code) {
+                refreshRandomColors();
+                //updateBarColors();
+            }
+            else if(bars.fill.type === BAR_FILL_TYPE.UNIFORM_SCALE.code) {
+                refreshUniformScaledColors();
+            }
+        });
+
+        scope.$watch('bars.fill.refreshTrigger', function() {console.log('random color refreshment externally' +
+            ' triggered');
+            refreshRandomColors();
+        });
+
+        scope.$watch('bars.fill.colors', function() {console.log('watcher update bar colors');
+            bars.fill.colors = scope.bars.fill.colors;
+            updateBarColors();
+        });
+
+        scope.$watch('bars.fill.baseColor', function(newVal) {
+            if(bars.fill.type !== BAR_FILL_TYPE.UNIFORM_SCALE.code) return;
+            bars.fill.baseColor = newVal;
+            refreshUniformScaledColors();
+        });
+
+        scope.$watchCollection('shown', function(newVal) {
+            console.log('hide some');
+            var allComponents = ['xAxis', 'yAxis', 'xLegend', 'yLegend', 'titleLabel', 'grid'];
+            angular.forEach(allComponents, function(c) {
+                if(!newVal[c]) {
+                    var targetObj = eval(c);
+                    backups[c] = angular.copy(targetObj);
+                    targetObj.height = 0;
+                    targetObj.width = 0;
+                }
+                if(newVal[c] && backups[c]) {
+                    var restoreObj = angular.copy(backups[c]);
+                    var targetObj2 = eval(c);
+                    targetObj2.height = restoreObj.height;
+                    targetObj2.width = restoreObj.width;
+                    delete backups[c];
+                }
+            });
+        });
 
 
+        function updateBarColors() {console.log('update bar colors');
+            rects.attr('fill', function(d, i) {
+                return bars.fill.colors[i];
+            });
+        }
+
+        function refreshRandomColors() {console.log('refresh random colors');
+            bars.fill.colors = randomColorArray(bars.data.length);
+            scope.bars.fill.colors = bars.fill.colors;
+        }
+
+        function randomColorArray(size) {
+            var colorArray = [];
+            //for(var i=0; i<size; i++) colorArray.push(colorScale(i));
+            //for(var i=0; i<size; i++) colorArray.push("hsl("+Math.random()*360+",100%,50%)");
+            for(var i=0; i<size; i++) colorArray.push("rgb("+(Math.random()*255).toFixed(0)+","+(Math.random()*255).toFixed(0)+","+(Math.random()*255).toFixed(0)+")");
+            return colorArray;
+        }
+
+        function refreshUniformScaledColors() {
+            bars.fill.colors = colorShader(bars.data.length);
+            scope.bars.fill.colors = bars.fill.colors;
+        }
+
+        function colorShader(size) {
+            var shades = [];
+            var minD = Math.min.apply(null, bars.data);
+            var maxD = Math.max.apply(null, bars.data);
+            for(var i=0; i<size; i++) {
+                var stringColor = bars.fill.baseColor.toString().replace('#', '');
+                var r = parseInt('0x'+stringColor.slice(0,2));
+                var g = parseInt('0x'+stringColor.slice(2,4));
+                var b = parseInt('0x'+stringColor.slice(4,6));
+                r = bars.data[i]*r/maxD;
+                g = bars.data[i]*g/maxD;
+                b = bars.data[i]*b/maxD;
+                shades.push('rgb('+ r.toFixed(0)+','+g.toFixed(0)+','+b.toFixed(0)+')');
+                //shades.push(d3.rgb(bars.fill.baseColor).darker());
+            }
+            return shades;
+        }
 
 
         function updatexAxisHeight() {
@@ -704,7 +823,8 @@ barChartModule.directive('barChart', function() {
             yAxis: '=',
             xLegend: '=',
             yLegend: '=',
-            titleLabel: '='}
+            titleLabel: '=',
+            shown: '='}
     }
 });
 
@@ -716,3 +836,5 @@ function CustomException(message, name) {
         return this.name + ': ' + this.message;
     }
 }
+
+

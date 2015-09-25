@@ -6,6 +6,7 @@
     <title>Bar Chart</title>
     <link rel="stylesheet" href="/assets/css/bootstrap.css">
     <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/bower_components/angular-bootstrap-colorpicker/css/colorpicker.css">
 </head>
 <body ng-app="rootModule">
 
@@ -20,6 +21,7 @@
                        data-x-legend="barXLegend"
                        data-y-legend="barYLegend"
                        data-title-label="barTitleLabel"
+                       shown="shown"
                        class="chart-test-height">
         </div>
         <div class="col-md-6">
@@ -99,6 +101,72 @@
                        ng-model="barBars.padding"
                        id="barpadding">
             </div>
+            <div class="form-group col-xs-6">
+                <label for="colorType" class="control-label">Tipo de relleno</label>
+                <div ng-class="{'input-group': barBars.fill.type === FillTypes.RANDOM.code}">
+                    <select id="colorType"
+                            class="form-control"
+                            data-ng-model="barBars.fill.type"
+                            ng-options="cType.code as cType.name for cType in FillTypes"></select>
+                    <a ng-show="barBars.fill.type === FillTypes.RANDOM.code"
+                       ng-click="barBars.fill.refreshTrigger = !barBars.fill.refreshTrigger"
+                       class="input-group-addon btn btn-link no-background no-border">
+                        <span class="glyphicon glyphicon-refresh"></span>
+                    </a>
+                </div>
+            </div>
+            <div class="form-group col-xs-6"
+                 ng-show="barBars.fill.type === FillTypes.UNIFORM_SCALE.code">
+                <label for="baseColor" class="control-label">Color base</label>
+                <input colorpicker
+                       id="baseColor"
+                       type="text"
+                       class="form-control"
+                       placeholder="color base"
+                       ng-model="barBars.fill.baseColor" />
+            </div>
+            <div ng-show="barBars.fill.type === FillTypes.CUSTOM_SIMPLE.code"
+                 class="form-group col-xs-12">
+                <label class="control-label" for="barcolors">Lista de colores</label>
+                <textarea class="form-control"
+                          make-it-array
+                          rgb-colors
+                          rows="5"
+                          data-ng-model="barBars.fill.colors"
+                          id="barcolors"></textarea>
+            </div>
+            <div class="col-xs-12">
+                <label class="control-label">
+                    <input type="checkbox"
+                           ng-model="shown.titleLabel">
+                    Título
+                </label>
+                <label class="control-label">
+                    <input type="checkbox"
+                           ng-model="shown.xAxis">
+                    Eje X
+                </label>
+                <label class="control-label">
+                    <input type="checkbox"
+                           ng-model="shown.yAxis">
+                    Eje Y
+                </label>
+                <label class="control-label">
+                    <input type="checkbox"
+                           ng-model="shown.xLegend">
+                    Título X
+                </label>
+                <label class="control-label">
+                    <input type="checkbox"
+                           ng-model="shown.yLegend">
+                    Título Y
+                </label>
+                <label class="control-label">
+                    <input type="checkbox"
+                           ng-model="shown.grid">
+                    Grid
+                </label>
+            </div>
         </div>
 
     </div>
@@ -107,6 +175,8 @@
 <script src="/assets/js/angular.js"></script>
 <script src="/bower_components/d3/d3.js"></script>
 <script src="/bower_components/angular-charts/dist/angular-charts.js"></script>
+<script src="/bower_components/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.js"></script>
+<script src="/assets/js/app/constants.js"></script>
 <script src="/assets/js/app/app.js"></script>
 <script src="/assets/js/app/d3Charts.js"></script>
 <script src="/assets/js/directives/inputFile.js"></script>
@@ -114,4 +184,5 @@
 <script src="/assets/js/directives/scatterCharts.js"></script>
 <script src="/assets/js/directives/barChart.js"></script>
 <script src="/assets/js/directives/makeitarray.js"></script>
+<script src="/assets/js/directives/rgbcolors.js"></script>
 </body>

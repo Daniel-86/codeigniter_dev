@@ -119,3 +119,10 @@ scatter-chart {
 textarea {
     resize: none;
 }
+
+.no-background {
+    background: none;
+}
+.no-border {
+    border: none;
+}

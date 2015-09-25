@@ -35,6 +35,8 @@ d3ChartsModule.controller('D3ChartsCtrl', function($scope, $window) {
         }
     };
 
+    $scope.FillTypes = BAR_FILL_TYPE;
+
     $scope.chartData = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
         11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
 
@@ -75,6 +77,12 @@ d3ChartsModule.controller('D3ChartsCtrl', function($scope, $window) {
     $scope.barTitleLabel = null;
     $scope.barBars = {
         padding: 8,
-        data: $scope.chartVals
-    }
+        data: $scope.chartVals,
+        fill: {
+            type: BAR_FILL_TYPE.RANDOM.code,
+            refreshTrigger: true
+        }
+    };
+    //$scope.shown = {};
+
 });

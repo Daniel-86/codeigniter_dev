@@ -19,6 +19,7 @@
   ],
   "dependencies": {
     "angular-charts": "~0.2.7",
-    "angular-chart.js": "~0.8.4"
+    "angular-chart.js": "~0.8.4",
+    "angular-bootstrap-colorpicker": "~3.0.19"
   }
 }
