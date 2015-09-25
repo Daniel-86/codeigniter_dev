@@ -61,7 +61,8 @@ d3ChartsModule.controller('D3ChartsCtrl', function($scope, $window) {
 
     var xaxix = {};
     var bars = [];
-    for(var i=0;i<8;i++) {
+    var nBars = 8;
+    for(var i=0;i<nBars;i++) {
         bars.push({value: $scope.chartData[i], label: $scope.xLabels[i]});
         if(!xaxix.labels) xaxix.labels = [];
         xaxix.labels.push(etiquetas[i]);
@@ -85,4 +86,64 @@ d3ChartsModule.controller('D3ChartsCtrl', function($scope, $window) {
     };
     //$scope.shown = {};
 
+    function randomArrayFactory(size, upper, lower, withDecimals) {
+        if(!size) return [];
+        if(!upper) upper = 10;
+        if(!lower) lower = 0;
+        var array = Array.apply(null, Array(size)).map(function(_, i) {
+            return Math.random() * (upper-lower) + lower;
+        });
+        if(!withDecimals) {
+            return array.map(function(v) {
+                return v.toFixed(0);
+            });
+        }
+        return array;
+    }
+
+    function subDataFactory() {
+        var lengths = randomArrayFactory(nBars, 10, 3);
+        var data = [];
+        lengths.map(function(l) {
+            data.push(randomArrayFactory(parseInt(l), 30, 2));
+        });
+        return data;
+    }
+
+    function stringGen(len) {
+        if(!len) len = 4;
+        var text = " ";
+        var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
+        for( var i=0; i < len; i++ )
+            text += charset.charAt(Math.floor(Math.random() * charset.length));
+        return text;
+    }
+
+    function subLabelsFactory() {
+        var labelsArray = [];
+        angular.forEach(subData, function(s) {
+            var tempArr = [];
+            angular.forEach(s, function(i) {
+                tempArr.push(stringGen());
+            });
+            labelsArray.push(tempArr);
+        });
+        return labelsArray;
+    }
+
+    function testSubDataFactory() {
+        var lengths = Array.apply(null, Array(nBars)).map(function() {return 5;});
+        var data = [];
+        lengths.map(function(l) {
+            data.push([20, 4, 16, 23, 17, 6]);
+        });
+        return data;
+    }
+
+    var subData = testSubDataFactory();
+    var subLabels = subLabelsFactory();
+
+    $scope.subs = {data: subData, labels: subLabels};
+
+    var debug = 'yeah';
 });

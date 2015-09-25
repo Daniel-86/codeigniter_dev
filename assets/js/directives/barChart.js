@@ -18,7 +18,7 @@ var barChartModule = angular.module('barCharts', []);
  * @param {Object} data-x-legend Array containing x legend configurations: height, text and padding.
  * @param {Object} data-title-label Array containing chart title configurations: height, text and padding.
  * @param {Object} shown Array indicating which components are gonna be rendered, all of them can be hide except the
- * chart itself.
+ * @param {Object} subs Array containing expanded info for each bar (or something).
  *
  */
 barChartModule.directive('barChart', function() {
@@ -37,6 +37,7 @@ barChartModule.directive('barChart', function() {
         };
 
         var backups = {};
+        var rootContext = {};
 
         if(!scope.xAxis) scope.xAxis = {};
         if(!scope.yAxis) scope.yAxis = {};
@@ -150,7 +151,7 @@ barChartModule.directive('barChart', function() {
             .attr('height', h);
 
         chartGraph.append('g')
-            .attr('class', 'chart-title')
+            .attr('class', 'chart-title titleLabel')
             .append('text')
             .text(titleLabel.text)
             .style('font-size', (titleLabel.height-titleLabel.padding.bottom))
@@ -173,7 +174,7 @@ barChartModule.directive('barChart', function() {
             .ticks(4);
 
         chartGraph.append('g')
-            .attr('class', 'x-legend')
+            .attr('class', 'x-legend xLegend')
             .append('text')
             .text(xLegend.text)
             .style('font-size', (xLegend.height-xLegend.padding.top))
@@ -181,7 +182,7 @@ barChartModule.directive('barChart', function() {
         chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(xLegend.y-xLegend.padding.top)+')');
 
         chartGraph.append('g')
-            .attr('class', 'x axis')
+            .attr('class', 'x axis xAxis')
             .call(xFn)
             .selectAll('text')
             .style('text-anchor', 'end')
@@ -192,7 +193,7 @@ barChartModule.directive('barChart', function() {
             .attr('transform', 'translate('+xAxis.x+','+xAxis.y+')');
 
         chartGraph.append('g')
-            .attr('class', 'y-legend')
+            .attr('class', 'y-legend yLegend')
             .append('text')
             .text(yLegend.text)
             .attr('transform', 'rotate(-90)')
@@ -202,13 +203,13 @@ barChartModule.directive('barChart', function() {
             .attr('transform', 'translate('+(yLegend.x+yLegend.width-yLegend.padding.left)+','+yLegend.y+')');
 
         chartGraph.append('g')
-            .attr('class', 'y axis')
+            .attr('class', 'y axis yAxis')
             .call(yFn);
         chartGraph.select('.y.axis')
             .attr('transform', 'translate('+(yAxis.x+yAxis.width)+','+yAxis.y+')');
 
         chartGraph.append('g')
-            .attr('class', 'ygrid')
+            .attr('class', 'ygrid grid')
             .selectAll('line.y')
             .data(yScale.ticks(4))
             .enter().append('line')
@@ -239,6 +240,16 @@ barChartModule.directive('barChart', function() {
             .attr('height', 0)
             .attr('fill', function(d, i) {
                 return bars.fill.colors[i];
+            })
+            .on('dblclick', function(d, i) {
+                console.log('doble click en :'+i);
+                rootContext.xAxis = angular.copy(xAxis);
+                rootContext.bars = angular.copy(bars);
+                xAxis.labels = scope.subs.labels[i];
+                bars.data = scope.subs.data[i];
+                scope.xAxis = xAxis;
+                scope.bars = bars;
+                redrawGraphWithNewData();
             });
         rects.attr('width', xScale.rangeBand())
             .attr('x', function(d, i) {
@@ -370,7 +381,7 @@ barChartModule.directive('barChart', function() {
             }
 
             rects.on('mouseenter', function(d, i) {
-                console.log('mouse enter');
+                //console.log('mouse enter');
                 dataTooltip.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2-tooltipWidth/2)+','+(yScale(d)-tooltipHeight-2)+')');
                 dataTooltipText.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2)+','+(yScale(d)-tooltipHeight-2)+')');
 
@@ -399,12 +410,20 @@ barChartModule.directive('barChart', function() {
                     .attr('fill', scope.currentSel.fill);
             });
             rects.on('mouseleave', function() {
-                console.log('mouse leave');
+                //console.log('mouse leave');
                 tooltipContainer.style('display', 'none');
                 svg.select('.bar-selected')
                     .style('display', 'none');
                 scope.currentSel = {};
             });
+                //rects.on('dblclick', function(d, i) {
+                //    console.log('doble click en :'+i);
+                //    //rootContext.xAxis = angular.copy(xAxis);
+                //    //rootContext.bars = angular.copy(bars);
+                //    //xAxis.labels = scope.subs.labels[i];
+                //    //bars.data = scope.subs.data[i];
+                //    //redrawGraph();
+                //});
 
         });
 
@@ -496,7 +515,7 @@ barChartModule.directive('barChart', function() {
         });
 
         scope.$watch('bars.fill.type', function(newVal) {
-            console.log('fill type changed');
+            //console.log('fill type changed');
             if(!bars.fill) bars.fill = {};
             bars.fill.type = newVal;
             if(bars.fill.type === BAR_FILL_TYPE.RANDOM.code) {
@@ -508,12 +527,12 @@ barChartModule.directive('barChart', function() {
             }
         });
 
-        scope.$watch('bars.fill.refreshTrigger', function() {console.log('random color refreshment externally' +
-            ' triggered');
+        scope.$watch('bars.fill.refreshTrigger', function() {/*console.log('random color refreshment externally' +
+            ' triggered');*/
             refreshRandomColors();
         });
 
-        scope.$watch('bars.fill.colors', function() {console.log('watcher update bar colors');
+        scope.$watch('bars.fill.colors', function() {/*console.log('watcher update bar colors');*/
             bars.fill.colors = scope.bars.fill.colors;
             updateBarColors();
         });
@@ -533,6 +552,8 @@ barChartModule.directive('barChart', function() {
                     backups[c] = angular.copy(targetObj);
                     targetObj.height = 0;
                     targetObj.width = 0;
+                    svg.select('.'+c)
+                        .style('display', 'none');
                 }
                 if(newVal[c] && backups[c]) {
                     var restoreObj = angular.copy(backups[c]);
@@ -540,18 +561,20 @@ barChartModule.directive('barChart', function() {
                     targetObj2.height = restoreObj.height;
                     targetObj2.width = restoreObj.width;
                     delete backups[c];
+                    svg.select('.'+c)
+                        .style('display', '');
                 }
             });
         });
 
 
-        function updateBarColors() {console.log('update bar colors');
+        function updateBarColors() {/*console.log('update bar colors');*/
             rects.attr('fill', function(d, i) {
                 return bars.fill.colors[i];
             });
         }
 
-        function refreshRandomColors() {console.log('refresh random colors');
+        function refreshRandomColors() {/*console.log('refresh random colors');*/
             bars.fill.colors = randomColorArray(bars.data.length);
             scope.bars.fill.colors = bars.fill.colors;
         }
@@ -675,30 +698,30 @@ barChartModule.directive('barChart', function() {
         function redrawGraph() {
             yLegend.x = padding.right;
             xLegend.y = h - xLegend.height - padding.bottom;
-            yAxis.y = titleLabel.y+titleLabel.height;
+            yAxis.y = titleLabel.y + titleLabel.height;
             chart.y = yAxis.y;
-            chart.x = yLegend.x+yLegend.width + yAxis.width;
+            chart.x = yLegend.x + yLegend.width + yAxis.width;
             chart.height = xLegend.y - xAxis.height - chart.y;
-            chart.width = w - (yLegend.x+yLegend.width) - yAxis.width - padding.left;
-            yLegend.y = chart.y + chart.height/2;
+            chart.width = w - (yLegend.x + yLegend.width) - yAxis.width - padding.left;
+            yLegend.y = chart.y + chart.height / 2;
             yLegend.height = chart.height;
-            yAxis.x = yLegend.x+yLegend.width;
+            yAxis.x = yLegend.x + yLegend.width;
             yAxis.height = chart.height;
-            xLegend.x = chart.x + chart.width/2;
+            xLegend.x = chart.x + chart.width / 2;
             xLegend.width = chart.width;
             xAxis.x = chart.x;
             xAxis.y = chart.y + chart.height;
             xAxis.width = chart.width;
 
-            bars.width = (chart.width-(bars.data.length-1)*bars.padding)/bars.data.length;
+            bars.width = (chart.width - (bars.data.length - 1) * bars.padding) / bars.data.length;
 
             svg.attr('width', w)
                 .attr('height', h);
 
-            chartGraph.select('.chart-title').attr('transform', 'translate('+titleLabel.x+','+(titleLabel.y+titleLabel.height-titleLabel.padding.bottom)+')');
+            chartGraph.select('.chart-title').attr('transform', 'translate(' + titleLabel.x + ',' + (titleLabel.y + titleLabel.height - titleLabel.padding.bottom) + ')');
 
-            xScale.rangeRoundBands([0, chart.width], bars.padding/bars.width, 0);
-            yScale.range([chart.height, 0]);
+            xScale.domain(xAxis.labels).rangeRoundBands([0, chart.width], bars.padding / bars.width, 0);
+            yScale.domain([0, d3.max(bars.data, function(d) { return d;})]).range([chart.height, 0]);
 
             chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(xLegend.y-xLegend.padding.top)+')');
             chartGraph.select('.x.axis')
@@ -751,7 +774,7 @@ barChartModule.directive('barChart', function() {
             //scope.currentSel = {};
 
             rects.on('mouseenter', function(d, i) {
-                console.log('mouse enter');
+                //console.log('mouse enter');
                 var newX = xScale(xAxis.labels[i]);
                 if(!isNaN(newX)) dataTooltip.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2-tooltipWidth/2)+','+(yScale(d)-tooltipHeight-2)+')');
                 if(!isNaN(newX)) dataTooltipText.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2)+','+(yScale(d)-tooltipHeight-2)+')');
@@ -781,7 +804,7 @@ barChartModule.directive('barChart', function() {
                     .attr('fill', scope.currentSel.fill);
             });
             rects.on('mouseleave', function() {
-                console.log('mouse leave');
+                //console.log('mouse leave');
                 tooltipContainer.style('display', 'none');
                 svg.select('.bar-selected')
                     .style('display', 'none');
@@ -810,6 +833,124 @@ barChartModule.directive('barChart', function() {
                 .attr('dy', '-.45em');
         }
 
+        function redrawGraphWithNewData() {
+            bars.width = (chart.width - (bars.data.length - 1) * bars.padding) / bars.data.length;
+
+            xScale.domain(xAxis.labels);
+            var maxY = Math.max.apply(null, bars.data);
+            yScale.domain([0, Math.max.apply(null, bars.data)]);
+
+            chartGraph.select('.x.axis')
+                .call(xFn)
+                .selectAll('text')
+                .style('text-anchor', 'end')
+                .attr('dx', '-.8em')
+                .attr('dy', '-.45em')
+                .attr('transform', 'rotate(-85)');;
+
+            chartGraph.select('.y.axis').call(yFn);
+
+            //chartGraph.select('.ygrid').remove();
+            var auxGrid = chartGraph.select('.ygrid')
+                .selectAll('line.y')
+                .data(yScale.ticks(4));
+            auxGrid.exit().remove();
+            auxGrid.enter().append('line')
+                .selectAll('line')
+                .attr('x1', 0)
+                .attr('x2', chart.width)
+                .attr('y1', yScale)
+                .attr('y2', yScale);
+            //chartGraph.select('.ygrid')
+            //    .selectAll('line')
+            //    .attr('x1', 0)
+            //    .attr('x2', chart.width)
+            //    .attr('y1', yScale)
+            //    .attr('y2', yScale);
+            //chartGraph.select('.ygrid')
+            //    .attr('transform', 'translate('+chart.x+','+chart.y+')');
+            //chartGraph.select('.ygrid')
+            //    .selectAll('line')
+            //    .attr('x1', 0)
+            //    .attr('x2', chart.width)
+            //    .attr('y1', yScale)
+            //    .attr('y2', yScale);
+
+            rects.remove();
+            rects = chartGraph
+                .select('.chart-body')
+                .selectAll('rect')
+                .data(bars.data)
+                .enter()
+                .append('rect')
+                .attr('class', 'bar')
+                .attr('height', 0)
+                .attr('fill', function(d, i) {
+                    return bars.fill.colors[i];
+                });
+            rects.attr('width', xScale.rangeBand())
+                .attr('x', function(d, i) {
+                    return xScale(xAxis.labels[i]);
+                })
+                .transition()
+                .duration(500)
+                .attr('y', function(d) {return yScale(d);})
+                .attr('height', function(d) {return chart.height-yScale(d);});
+            //if(scope.currentSel.x) {
+            //    svg.select('.bar-selected')
+            //        .attr('x', scope.currentSel.x - (xScale.rangeBand()) * .3 / 2)
+            //        .attr('y', scope.currentSel.y)
+            //        .transition()
+            //        .duration(500)
+            //        .attr('width', scope.currentSel.width * 1.3)
+            //        .attr('height', scope.currentSel.height);
+            //}
+            //svg.select('.bar-selected')
+            //    .style('display', 'none');
+            //tooltipContainer.style('display', 'none');
+            if(scope.currentSel.nodo){
+                scope.currentSel.nodo.on('mouseleave').apply(this);
+            }
+            //scope.currentSel = {};
+
+            rects.on('mouseenter', function(d, i) {
+                //console.log('mouse enter');
+                var newX = xScale(xAxis.labels[i]);
+                if(!isNaN(newX)) dataTooltip.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2-tooltipWidth/2)+','+(yScale(d)-tooltipHeight-2)+')');
+                if(!isNaN(newX)) dataTooltipText.attr('transform', 'translate('+(xScale(xAxis.labels[i])+xScale.rangeBand()/2)+','+(yScale(d)-tooltipHeight-2)+')');
+
+
+
+
+                var x = xScale(xAxis.labels[i]),
+                    y = d3.select(this).attr('y'),
+                    width = d3.select(this).attr('width');
+                tooltipContainer.style('display', 'block');
+                dataTooltipText.select('text')
+                    .text(d);
+
+                scope.currentSel.nodo = d3.select(this);
+                scope.currentSel.width = d3.select(this).attr('width');
+                scope.currentSel.x = d3.select(this).attr('x');
+                scope.currentSel.y = d3.select(this).attr('y');
+                scope.currentSel.height = d3.select(this).attr('height');
+                scope.currentSel.fill = d3.select(this).attr('fill');
+                chartGraph.select('.bar-selected')
+                    .style('display', '')
+                    .attr('x', scope.currentSel.x-(xScale.rangeBand())*.3/2)
+                    .attr('y', scope.currentSel.y)
+                    .attr('width', scope.currentSel.width*1.3)
+                    .attr('height', scope.currentSel.height)
+                    .attr('fill', scope.currentSel.fill);
+            });
+            rects.on('mouseleave', function() {
+                //console.log('mouse leave');
+                tooltipContainer.style('display', 'none');
+                svg.select('.bar-selected')
+                    .style('display', 'none');
+                scope.currentSel = {};
+            });
+        }
     }
 
 
@@ -824,7 +965,8 @@ barChartModule.directive('barChart', function() {
             xLegend: '=',
             yLegend: '=',
             titleLabel: '=',
-            shown: '='}
+            shown: '=',
+            subs: '='}
     }
 });
 

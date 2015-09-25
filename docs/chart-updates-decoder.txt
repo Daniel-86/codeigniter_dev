@@ -83,3 +83,20 @@ nodes
   ('.y-legend') {transform: translate(y=yLegend.y)}
   ('.grid') {y1: yScale, y2: yScale}
   rects {y: yScale(d), height: chart.height-yScale(d)}
+
+
+
+bars.padding
+=================================================================================
+vars
+  bars.padding
+  bar.width
+
+nodes
+  xScale rangeBoundsBands([...], bars.padding/bar.width)
+
+updates
+  xscale
+  xFn
+  redraw chart with new xscale
+  redraw x axis using new xscale
