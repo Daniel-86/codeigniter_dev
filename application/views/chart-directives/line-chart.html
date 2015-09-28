@@ -3,7 +3,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
-    <title>Bar Chart</title>
+    <title>Line Chart</title>
     <link rel="stylesheet" href="/assets/css/bootstrap.css">
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/bower_components/angular-bootstrap-colorpicker/css/colorpicker.css">
@@ -15,7 +15,7 @@
          ng-controller="D3ChartsCtrl">
 
         <div class="col-md-6 bordered chart-responsive">
-            <bar-chart bars="barBars"
+            <line-chart bars="barBars"
                        data-x-axis="barXAxis"
                        data-y-axis="barYAxis"
                        data-x-legend="barXLegend"
@@ -24,7 +24,7 @@
                        shown="shown"
                        subs="subs"
                        go-back="isInternal"
-                       class="chart-test-height"></bar-chart>
+                       class="chart-test-height"></line-chart>
             <a href=""
                ng-show="isInternal"
                ng-click="isInternal = !isInternal"
@@ -156,15 +156,9 @@
                 <label class="control-label" for="barcolors">Lista de colores</label>
                 <textarea class="form-control"
                           make-it-array
-                          rgb-colors
                           rows="5"
                           data-ng-model="barBars.fill.colors"
                           id="barcolors"></textarea>
-                <!--<textarea class="form-control"-->
-                          <!--make-it-array-->
-                          <!--rows="5"-->
-                          <!--data-ng-model="barBars.fill.colors"-->
-                          <!--id="barcolors"></textarea>-->
             </div>
             <div class="col-xs-12">
                 <label class="control-label">
@@ -210,8 +204,8 @@
 <script src="/assets/js/app/app.js"></script>
 <script src="/assets/js/app/d3Charts.js"></script>
 <script src="/assets/js/directives/inputFile.js"></script>
-<script src="/assets/js/directives/barChart.js"></script>
+<script src="/assets/js/directives/lineChart.js"></script>
 <script src="/assets/js/directives/makeitarray.js"></script>
 <script src="/assets/js/directives/rgbcolors.js"></script>
-<script src="/assets/js/directives/lineChart.js"></script>
+<script src="/assets/js/directives/barChart.js"></script>
 </body>
