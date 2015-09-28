@@ -482,17 +482,7 @@ barChartModule.directive('barChart', function() {
         });
 
         scope.$watch('bars.fill.type', function(newVal) {
-            //console.log('fill type changed');
-            //if(!bars.fill) bars.fill = {};
-            //bars.fill.type = newVal;
-            //if(bars.fill.type === BAR_FILL_TYPE.RANDOM.code) {
-            //    refreshRandomColors();
-            //    //updateBarColors();
-            //}
-            //else if(bars.fill.type === BAR_FILL_TYPE.UNIFORM_SCALE.code) {
-            //    refreshUniformScaledColors();
-            //}
-            colorFactory();
+            colorFactory(newVal);
         });
 
         scope.$watch('bars.fill.refreshTrigger', function() {/*console.log('random color refreshment externally' +
@@ -536,9 +526,9 @@ barChartModule.directive('barChart', function() {
         });
 
 
-        function colorFactory() {
+        function colorFactory(newVal) {
             //if(!bars.fill) bars.fill = {};
-            //bars.fill.type = newVal;
+            bars.fill.type = newVal;
             if(bars.fill.type === BAR_FILL_TYPE.RANDOM.code) {
                 refreshRandomColors();
                 //updateBarColors();
@@ -719,13 +709,13 @@ barChartModule.directive('barChart', function() {
         }
 
         function updateChartPosition() {
-            chartGraph.select('.chart-body')
+            svg.select('.chart-body')
                 .attr('transform', 'translate('+(chart.x)+','+chart.y+')');
         }
 
         function updateChartWidth() {
             var width = xScale.rangeBand();
-            chartGraph.select('.chart-body')
+            svg.select('.chart-body')
                 .selectAll('rect')
                 .attr('width', xScale.rangeBand())
                 .attr('x', function(d, i) {
@@ -734,13 +724,11 @@ barChartModule.directive('barChart', function() {
         }
 
         function updateChartHeight() {
-            chartGraph.select('.chart-body')
+            svg.select('.chart-body')
                 .selectAll('rect')
                 .transition()
                 .duration(500)
-                .attr('y', function(d) {
-                    var height = yScale(d);
-                    return yScale(d);})
+                .attr('y', function(d) {return yScale(d);})
                 .attr('height', function(d) {return chart.height-yScale(d);});
         }
 
