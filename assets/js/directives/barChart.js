@@ -180,7 +180,7 @@ barChartModule.directive('barChart', function() {
             .text(xLegend.text)
             .style('font-size', (xLegend.height-xLegend.padding.top))
             .attr('class', 'claseTExto');
-        chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(xLegend.y-xLegend.padding.top)+')');
+        chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(h-padding.bottom)+')');
 
         chartGraph.append('g')
             .attr('class', 'x axis xAxis')
@@ -214,7 +214,6 @@ barChartModule.directive('barChart', function() {
             .selectAll('line.y')
             .data(yScale.ticks(4))
             .enter().append('line')
-            .attr('class', 'grid')
             .attr('y1', yScale)
             .attr('y2', yScale)
             .style('stroke', '#ccc');
@@ -243,7 +242,7 @@ barChartModule.directive('barChart', function() {
                 return bars.fill.colors[i];
             })
             .on('dblclick', function(d, i) {
-                console.log('doble click en :'+i);
+                //console.log('doble click en :'+i);
                 rootContext.xAxis = angular.copy(xAxis);
                 rootContext.bars = angular.copy(bars);
                 xAxis.labels = scope.subs.labels[i];
@@ -252,7 +251,7 @@ barChartModule.directive('barChart', function() {
                 bars.fill.colors = scope.subs.colors? scope.subs.colors[i]: null;
                 redrawGraphWithNewData();
                 if(!bars.fill.colors) {
-                    colorFactory();
+                    colorFactory(bars.fill.type);
                     if(!scope.subs.colors) scope.subs.colors = [];
                     scope.subs.colors[i] = bars.fill.colors;
                 }
@@ -436,7 +435,7 @@ barChartModule.directive('barChart', function() {
             svg.select('.y-legend')
                 .select('text')
                 .style('font-size', (yLegend.width-yLegend.padding.left));
-            chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(xLegend.y-xLegend.padding.top)+')');
+            chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(h-padding.bottom)+')');
             chartGraph.select('.y-legend')
                 .attr('transform', 'translate('+(yLegend.x+yLegend.width-yLegend.padding.left)+','+yLegend.y+')');
             updateYAxisWidth();
@@ -448,7 +447,7 @@ barChartModule.directive('barChart', function() {
             svg.select('.x-legend')
                 .select('text')
                 .style('font-size', (xLegend.height-xLegend.padding.top));
-            //chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(xLegend.y-xLegend.padding.top)+')');
+            //chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(h-padding.bottom)+')');
             updatexAxisHeight();
         });
 
@@ -502,23 +501,27 @@ barChartModule.directive('barChart', function() {
         });
 
         scope.$watchCollection('shown', function(newVal) {
-            console.log('hide some');
+            console.log('hide components');
             var allComponents = ['xAxis', 'yAxis', 'xLegend', 'yLegend', 'titleLabel', 'grid'];
             angular.forEach(allComponents, function(c) {
                 if(!newVal[c]) {
-                    var targetObj = eval(c);
-                    backups[c] = angular.copy(targetObj);
-                    targetObj.height = 0;
-                    targetObj.width = 0;
+                    if(c!=='grid') {
+                        var targetObj = eval(c);
+                        if(!backups[c]) backups[c] = angular.copy(targetObj);
+                        targetObj.height = 0;
+                        targetObj.width = 0;
+                    }
                     svg.select('.'+c)
                         .style('display', 'none');
                 }
-                if(newVal[c] && backups[c]) {
-                    var restoreObj = angular.copy(backups[c]);
-                    var targetObj2 = eval(c);
-                    targetObj2.height = restoreObj.height;
-                    targetObj2.width = restoreObj.width;
-                    delete backups[c];
+                else if(c==='grid' || (newVal[c] && backups[c])) {
+                    if(c!=='grid') {
+                        var restoreObj = angular.copy(backups[c]);
+                        var targetObj2 = eval(c);
+                        targetObj2.height = restoreObj.height;
+                        targetObj2.width = restoreObj.width;
+                        delete backups[c];
+                    }
                     svg.select('.'+c)
                         .style('display', '');
                 }
@@ -528,7 +531,7 @@ barChartModule.directive('barChart', function() {
 
         function colorFactory(newVal) {
             //if(!bars.fill) bars.fill = {};
-            bars.fill.type = newVal;
+            if(newVal) bars.fill.type = newVal;
             if(bars.fill.type === BAR_FILL_TYPE.RANDOM.code) {
                 refreshRandomColors();
                 //updateBarColors();
@@ -539,7 +542,9 @@ barChartModule.directive('barChart', function() {
         }
 
         function updateBarColors() {/*console.log('update bar colors');*/
-            svg.select('.chart-body').selectAll('rect').attr('fill', function(d, i) {
+            svg.select('.chart-body')
+                .selectAll('rect')
+                .attr('fill', function(d, i) {
                 return bars.fill.colors[i];
             });
         }
@@ -609,6 +614,8 @@ barChartModule.directive('barChart', function() {
                 .attr('y1', yScale)
                 .attr('y2', yScale);
 
+            var rects = svg.select('.chart-body').selectAll('rect');
+
             rects.attr('width', xScale.rangeBand())
                 .attr('x', function(d, i) {
                     return xScale(xAxis.labels[i]);
@@ -630,7 +637,7 @@ barChartModule.directive('barChart', function() {
         }
 
         function updateXLegendWidth() {
-            chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(xLegend.y-xLegend.padding.top)+')');
+            chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(h-padding.bottom)+')');
         }
 
         function updateYLegendHeight() {
@@ -653,7 +660,7 @@ barChartModule.directive('barChart', function() {
 
             xScale.rangeRoundBands([0, chart.width], bars.padding/bars.width, 0);
 
-            chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(xLegend.y-xLegend.padding.top)+')');
+            chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(h-padding.bottom)+')');
             chartGraph.select('.x.axis')
                 .attr('transform', 'translate('+xAxis.x+','+xAxis.y+')')
                 .call(xFn)
@@ -676,6 +683,7 @@ barChartModule.directive('barChart', function() {
 
             chartGraph.select('.chart-body')
                 .attr('transform', 'translate('+(chart.x)+','+chart.y+')');
+            var rects = svg.select('.chart-body').selectAll('rect');
             rects.attr('width', xScale.rangeBand())
                 .attr('x', function(d, i) {
                     return xScale(xAxis.labels[i]);
@@ -714,7 +722,6 @@ barChartModule.directive('barChart', function() {
         }
 
         function updateChartWidth() {
-            var width = xScale.rangeBand();
             svg.select('.chart-body')
                 .selectAll('rect')
                 .attr('width', xScale.rangeBand())
@@ -724,8 +731,13 @@ barChartModule.directive('barChart', function() {
         }
 
         function updateChartHeight() {
-            svg.select('.chart-body')
-                .selectAll('rect')
+            //svg.select('.chart-body')
+            //    .selectAll('rect')
+            //    .transition()
+            //    .duration(500)
+            //    .attr('y', function(d) {return yScale(d);})
+            //    .attr('height', function(d) {return chart.height-yScale(d);});
+            rects
                 .transition()
                 .duration(500)
                 .attr('y', function(d) {return yScale(d);})
@@ -747,7 +759,7 @@ barChartModule.directive('barChart', function() {
                 scope.currentSel.nodo = d3.select(this);
                 var barHoverData = extractBarDataFrom(d3.select(this));
                 barHoverData.visibility = true;
-                fullUpdateBarHover(chart.select('.bar-selected'), barHoverData);
+                fullUpdateBarHover(svg.select('.bar-selected'), barHoverData);
             });
         }
 
@@ -849,7 +861,7 @@ barChartModule.directive('barChart', function() {
             xScale.domain(xAxis.labels).rangeRoundBands([0, chart.width], bars.padding / bars.width, 0);
             yScale.domain([0, Math.max.apply(null, bars.data)]).range([chart.height, 0]);
 
-            chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(xLegend.y-xLegend.padding.top)+')');
+            chartGraph.select('.x-legend').attr('transform', 'translate('+xLegend.x+','+(h-padding.bottom)+')');
             chartGraph.select('.x.axis')
                 .attr('transform', 'translate('+xAxis.x+','+xAxis.y+')')
                 .call(xFn)
@@ -874,6 +886,7 @@ barChartModule.directive('barChart', function() {
 
             chartGraph.select('.chart-body')
                 .attr('transform', 'translate('+(chart.x)+','+chart.y+')');
+            var rects = svg.select('.chart-body').selectAll('rect');
             rects.attr('width', xScale.rangeBand())
                 .attr('x', function(d, i) {
                     return xScale(xAxis.labels[i]);
@@ -939,6 +952,7 @@ barChartModule.directive('barChart', function() {
         }
 
         function redrawChart() {
+            var rects = svg.select('.chart-body').selectAll('rect');
             rects.attr('width', xScale.rangeBand())
                 .attr('x', function(d, i) {
                     return xScale(xAxis.labels[i]);
@@ -976,7 +990,7 @@ barChartModule.directive('barChart', function() {
                         bars.fill.colors = scope.subs.colors? scope.subs.colors[i]: null;
                         redrawGraphWithNewData();
                         if(!bars.fill.colors) {
-                            colorFactory();
+                            colorFactory(bars.fill.type);
                             if(!scope.subs.colors) scope.subs.colors = [];
                             scope.subs.colors[i] = bars.fill.colors;
                         }
@@ -996,7 +1010,6 @@ barChartModule.directive('barChart', function() {
             bars.width = (chart.width - (bars.data.length - 1) * bars.padding) / bars.data.length;
 
             xScale.domain(xAxis.labels);
-            var maxY = Math.max.apply(null, bars.data);
             yScale.domain([0, Math.max.apply(null, bars.data)]);
 
             chartGraph.select('.x.axis')
@@ -1014,16 +1027,24 @@ barChartModule.directive('barChart', function() {
 
 
             //chartGraph.select('.ygrid').remove();
-            var auxGrid = chartGraph.select('.ygrid')
-                .selectAll('line.y')
-                .data(yScale.ticks(4));
-            auxGrid.exit().remove();
-            auxGrid.enter().append('line')
+
+            //var auxGrid = chartGraph.select('.ygrid')
+            //    .selectAll('line.y')
+            //    .data(yScale.ticks(4));
+            chartGraph.select('.ygrid')
                 .selectAll('line')
                 .attr('x1', 0)
                 .attr('x2', chart.width)
                 .attr('y1', yScale)
                 .attr('y2', yScale);
+            //auxGrid.exit().remove();
+            //auxGrid.enter().append('line')
+            //    .selectAll('line')
+            //    .attr('x1', 0)
+            //    .attr('x2', chart.width)
+            //    .attr('y1', yScale)
+            //    .attr('y2', yScale);
+
             //chartGraph.select('.ygrid')
             //    .selectAll('line')
             //    .attr('x1', 0)
