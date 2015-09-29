@@ -72,7 +72,7 @@ d3ChartsModule.controller('D3ChartsCtrl', function($scope, $window) {
     $scope.chartXLabels = bars.map(function(b){return b.label});
 
     $scope.barXAxis = xaxix;
-    $scope.barYAxis = {width: 14};
+    $scope.barYAxis = {width: 20};
     $scope.barXLegend = null;
     $scope.barYLegend = null;
     $scope.barTitleLabel = null;

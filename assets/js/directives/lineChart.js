@@ -232,13 +232,14 @@ lineChartModule.directive('lineChart', function() {
             .attr('transform', 'translate('+(chart.x)+','+chart.y+')');
         //El cuerpo de la gráfica
         var valueline = d3.svg.line()
+            .interpolate('basis')
             .x(function(d, i) { return xScale(xAxis.labels[i]) })
             .y(function(d) { return yScale(d)});
         //var rectsJoins = chartGraph
         //    .select('.chart-body')
         //    .selectAll('rect')
         //    .data(bars.data);
-        chartGraph.append('path')
+        chartGraph.select('.chart-body').append('path')
             .attr('d', valueline(bars.data));
         //var rects = rectsJoins.enter()
         //    .append('rect')
@@ -728,12 +729,15 @@ lineChartModule.directive('lineChart', function() {
         }
 
         function updateChartWidth() {
-            svg.select('.chart-body')
-                .selectAll('rect')
-                .attr('width', xScale.rangeBand())
-                .attr('x', function(d, i) {
-                    return xScale(xAxis.labels[i]);
-                });
+            //svg.select('.chart-body')
+            //    .selectAll('rect')
+            //    .attr('width', xScale.rangeBand())
+            //    .attr('x', function(d, i) {
+            //        return xScale(xAxis.labels[i]);
+            //    });
+            chartGraph.select('.chart-body').select('path')
+                .attr('d', valueline(bars.data))
+                .attr('class', 'line-draw');
         }
 
         function updateChartHeight() {
@@ -748,6 +752,8 @@ lineChartModule.directive('lineChart', function() {
             //    .duration(500)
             //    .attr('y', function(d) {return yScale(d);})
             //    .attr('height', function(d) {return chart.height-yScale(d);});
+            chartGraph.select('.chart-body').select('path')
+                .attr('d', valueline(bars.data));
         }
 
         function manageTooltipVisibility() {
